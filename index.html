@@ -1,0 +1,4651 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>StudyBot AI – Pakistan</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+
+<!-- KaTeX CSS -->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8557386046169872" crossorigin="anonymous"></script>
+
+<!-- Supabase Auth (Firebase Hosting can still be used for hosting only) -->
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+// ══════════════════════════════════════════════════════
+//  ✅ SUPABASE CONFIG — Replace with your own values
+//  Supabase Dashboard → Project Settings → API
+// ══════════════════════════════════════════════════════
+const supabaseUrl = "https://lmiyljxgfjzlvurxqbkd.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtaXlsanhnZmp6bHZ1cnhxYmtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1OTAwNjYsImV4cCI6MjA5MjE2NjA2Nn0.qskJPne0DtJj5a0oosAEDQ7KbrCaUxQzEbtwW6kX7aM";
+let supabase = null;
+let supabaseReady = false;
+try {
+  if (!supabaseUrl.includes("YOUR_") && !supabaseAnonKey.includes("YOUR_")) {
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
+    supabaseReady = true;
+  }
+} catch (e) {
+  console.warn("Supabase not configured:", e);
+}
+
+
+
+// ─── AUTH HANDLERS (keep existing names used by UI) ───────────────────────
+function _setAuthStorage(remember) {
+  if (!supabase) return;
+  const storage = remember ? window.localStorage : window.sessionStorage;
+  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storage,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  });
+}
+
+window._fbRegister = async function (email, password, username, remember) {
+  if (!supabaseReady) return { error: "Supabase not configured. Please update supabaseUrl/supabaseAnonKey." };
+  try {
+    _setAuthStorage(remember);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name: username } },
+    });
+    if (error) return { error: error.message };
+
+    const user = data.user;
+    if (!user) {
+      return { error: "Signup successful, but email confirmation is required. Please check your inbox, then login." };
+    }
+    return { user, username };
+  } catch (e) {
+    return { error: e?.message || String(e) };
+  }
+};
+
+window._fbLogin = async function (email, password, remember) {
+  if (!supabaseReady) return { error: "Supabase not configured. Please update supabaseUrl/supabaseAnonKey." };
+  try {
+    _setAuthStorage(remember);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error.message };
+    const user = data.user;
+    const username = (user?.user_metadata?.name || user?.email?.split("@")?.[0] || "Student");
+    return { user, username };
+  } catch (e) {
+    return { error: e?.message || String(e) };
+  }
+};
+
+window._fbLogout = async function () {
+  if (!supabaseReady) return;
+  try { await supabase.auth.signOut(); } catch (e) {}
+};
+
+window._fbAuthState = async function (cb) {
+  if (!supabaseReady) { cb(null); return; }
+
+  try {
+    const { data } = await supabase.auth.getSession();
+    const user = data?.session?.user || null;
+    if (user) {
+      const username = (user?.user_metadata?.name || user?.email?.split("@")?.[0] || "Student");
+      cb({ user, username });
+    } else {
+      cb(null);
+    }
+  } catch (e) {
+    cb(null);
+  }
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    const user = session?.user || null;
+    if (user) {
+      const username = (user?.user_metadata?.name || user?.email?.split("@")?.[0] || "Student");
+      cb({ user, username });
+    } else {
+      cb(null);
+    }
+  });
+};
+
+// Keep the same flag/event name so the rest of this page doesn't need refactors
+window._firebaseReady = supabaseReady;
+window.dispatchEvent(new CustomEvent("firebaseReady"));
+</script>
+
+
+
+<!-- KaTeX JS -->
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+
+
+
+<style>
+
+:root {
+
+  --green:#00c896;--green-dark:#00a07a;--green-light:#e0fff6;
+
+  --blue:#2563eb;--saffron:#ff9f1c;
+
+  --bg:#f0faf6;--surface:#ffffff;--text:#0f2e24;--muted:#6b8f7e;
+
+  --border:#d1ede4;--shadow:0 4px 24px rgba(0,200,150,.10);
+
+  --sidebar-w: 260px;
+
+  --header-h: 62px;
+
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);min-height:100vh;overflow:hidden}
+.mic-btn {
+  background: transparent;
+  border: none;
+  color: #00c896; /* StudyBot Emerald */
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin: 0 5px;
+}
+
+.mic-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mic-btn:hover {
+  color: #ff9f1c; /* Changes to highlight color on hover */
+}
+
+/* Pulse animation for active recording */
+.mic-btn.recording {
+  color: #ff4d4d;
+  animation: micPulse 1.5s infinite;
+}
+
+@keyframes micPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* ══════════════════════════ AUTH SCREEN ══════════════════════════ */
+
+#authScreen {
+
+  position:fixed;inset:0;z-index:1000;
+
+  background: linear-gradient(135deg, #0f2e24 0%, #1a4a38 50%, #0f2e24 100%);
+
+  display:flex;align-items:center;justify-content:center;
+
+  animation: fadeIn .4s ease;
+
+}
+
+#authScreen::before {
+
+  content:'';position:absolute;top:-100px;left:-100px;
+
+  width:500px;height:500px;
+
+  background:radial-gradient(circle,rgba(0,200,150,.15) 0%,transparent 70%);
+
+  pointer-events:none;
+
+}
+
+#authScreen::after {
+
+  content:'';position:absolute;bottom:-80px;right:-80px;
+
+  width:400px;height:400px;
+
+  background:radial-gradient(circle,rgba(255,159,28,.08) 0%,transparent 70%);
+
+  pointer-events:none;
+
+}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+
+
+.auth-card {
+
+  position:relative;z-index:1;
+
+  background:rgba(255,255,255,.06);
+
+  backdrop-filter:blur(20px);
+
+  border:1px solid rgba(255,255,255,.12);
+
+  border-radius:28px;
+
+  padding:40px 36px;
+
+  width:100%;max-width:420px;
+
+  margin:16px;
+
+  animation:slideUp .5s ease;
+
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+
+}
+
+.auth-logo {
+
+  text-align:center;margin-bottom:28px;
+
+}
+
+.auth-logo .logo-icon {
+
+  font-size:48px;display:block;margin-bottom:10px;
+
+}
+
+.auth-logo h1 {
+
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:1.6rem;
+
+  color:#fff;letter-spacing:-.5px;
+
+}
+
+.auth-logo p {
+
+  font-size:.76rem;color:rgba(255,255,255,.55);margin-top:3px;
+
+}
+
+.auth-tabs {
+
+  display:flex;background:rgba(255,255,255,.08);border-radius:14px;padding:4px;margin-bottom:24px;gap:4px;
+
+}
+
+.auth-tab {
+
+  flex:1;padding:9px;border-radius:10px;font-size:.82rem;font-weight:600;
+
+  color:rgba(255,255,255,.5);cursor:pointer;text-align:center;border:none;background:none;
+
+  transition:all .2s;font-family:inherit;
+
+}
+
+.auth-tab.active {
+
+  background:var(--green);color:#fff;
+
+  box-shadow:0 3px 14px rgba(0,200,150,.35);
+
+}
+
+.auth-field {
+
+  margin-bottom:14px;
+
+}
+
+.auth-field label {
+
+  display:block;font-size:.74rem;font-weight:600;
+
+  color:rgba(255,255,255,.55);margin-bottom:6px;letter-spacing:.03em;text-transform:uppercase;
+
+}
+
+.auth-field input {
+
+  width:100%;background:rgba(255,255,255,.08);
+
+  border:1.5px solid rgba(255,255,255,.12);
+
+  border-radius:12px;padding:12px 15px;
+
+  font-size:.9rem;color:#fff;font-family:inherit;outline:none;
+
+  transition:border-color .2s,background .2s;
+
+}
+
+.auth-field input::placeholder{color:rgba(255,255,255,.3)}
+
+.auth-field input:focus {
+
+  border-color:var(--green);background:rgba(0,200,150,.08);
+
+}
+
+.remember-row {
+
+  display:flex;align-items:center;gap:10px;margin-bottom:20px;cursor:pointer;
+
+}
+
+.remember-row input[type=checkbox]{
+
+  width:16px;height:16px;accent-color:var(--green);cursor:pointer;
+
+}
+
+.remember-row span {
+
+  font-size:.8rem;color:rgba(255,255,255,.55);
+
+}
+
+.auth-btn {
+
+  width:100%;padding:13px;border-radius:14px;border:none;
+
+  background:linear-gradient(135deg,var(--green),var(--green-dark));
+
+  color:#fff;font-size:.92rem;font-weight:700;font-family:inherit;
+
+  cursor:pointer;transition:all .2s;
+
+  box-shadow:0 4px 20px rgba(0,200,150,.4);
+
+  position:relative;overflow:hidden;
+
+}
+
+.auth-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,200,150,.5)}
+
+.auth-btn:active{transform:translateY(0)}
+
+.auth-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+.auth-error {
+
+  background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);
+
+  border-radius:10px;padding:10px 14px;font-size:.8rem;color:#fca5a5;
+
+  margin-bottom:14px;display:none;
+
+}
+
+.auth-urdu {
+
+  text-align:center;margin-top:18px;
+
+  font-family:'Noto Nastaliq Urdu',serif;
+
+  font-size:.95rem;color:var(--green);direction:rtl;
+
+}
+
+
+
+/* ══════════════════════════ MAIN APP ══════════════════════════ */
+
+#mainApp {
+
+  display:none;height:100vh;overflow:hidden;
+
+  flex-direction:column;
+
+}
+
+#mainApp.visible { display:flex; }
+
+
+
+/* ── TOP HEADER ── */
+
+.app-header {
+
+  height:var(--header-h);
+
+  background:linear-gradient(135deg,#00c896 0%,#00a07a 100%);
+
+  display:flex;align-items:center;padding:0 18px;gap:12px;
+
+  flex-shrink:0;position:relative;z-index:10;
+
+  box-shadow:0 2px 20px rgba(0,0,0,.12);
+
+}
+
+.app-header::after{
+
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+
+  background:linear-gradient(90deg,#ff9f1c,#00c896,#2563eb);
+
+}
+
+.hamburger {
+
+  width:36px;height:36px;background:rgba(255,255,255,.15);border:none;
+
+  border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+
+  flex-shrink:0;transition:background .2s;
+
+}
+
+.hamburger:hover{background:rgba(255,255,255,.25)}
+
+.hamburger svg{width:18px;height:18px}
+
+.header-brand {
+
+  display:flex;align-items:center;gap:10px;flex:1;
+
+}
+
+.header-logo {
+
+  width:38px;height:38px;background:rgba(255,255,255,.2);
+
+  border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;
+
+}
+
+.header-brand h1 {
+
+  font-family:'Baloo 2',cursive;font-weight:800;font-size:1.15rem;color:#fff;
+
+}
+
+.header-brand p {
+
+  font-size:.66rem;color:rgba(255,255,255,.75);font-weight:500;margin-top:1px;
+
+}
+
+.header-right {
+
+  display:flex;align-items:center;gap:8px;margin-left:auto;
+
+}
+
+.header-badge {
+
+  background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+
+  color:#fff;font-size:.67rem;font-weight:600;padding:4px 10px;
+
+  border-radius:20px;display:flex;align-items:center;gap:5px;
+
+}
+
+.dot{width:6px;height:6px;background:#7fffda;border-radius:50%;animation:pulse 1.6s infinite}
+
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+
+.header-user {
+
+  display:flex;align-items:center;gap:7px;
+
+  background:rgba(255,255,255,.15);border-radius:20px;padding:5px 12px 5px 5px;
+
+}
+
+.header-avatar {
+
+  width:28px;height:28px;background:rgba(255,255,255,.9);border-radius:50%;
+
+  display:flex;align-items:center;justify-content:center;
+
+  font-size:13px;font-weight:700;color:var(--green-dark);
+
+}
+
+.header-username {
+
+  font-size:.78rem;font-weight:600;color:#fff;max-width:80px;
+
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+
+}
+
+.header-btn {
+
+  width:34px;height:34px;background:rgba(255,255,255,.15);border:none;
+
+  border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+
+  color:#fff;font-size:16px;transition:background .2s;
+
+}
+
+.header-btn:hover{background:rgba(255,255,255,.28)}
+
+
+
+/* ── BODY (sidebar + chat) ── */
+
+.app-body {
+
+  flex:1;display:flex;overflow:hidden;position:relative;
+
+}
+
+
+
+/* ── SIDEBAR ── */
+
+.sidebar {
+
+  width:var(--sidebar-w);
+
+  background:linear-gradient(180deg,#0f2e24 0%,#1a4a38 100%);
+
+  flex-shrink:0;display:flex;flex-direction:column;
+
+  overflow:hidden;transition:width .3s ease,transform .3s ease;
+
+  position:relative;z-index:5;
+
+}
+
+.sidebar.collapsed { width:0; }
+
+@media(max-width:700px) {
+
+  .sidebar {
+
+    position:absolute;top:0;bottom:0;left:0;
+
+    transform:translateX(0);z-index:50;
+
+    box-shadow:4px 0 24px rgba(0,0,0,.3);
+
+  }
+
+  .sidebar.collapsed { transform:translateX(-100%);width:var(--sidebar-w); }
+
+}
+
+
+
+.sidebar-header {
+
+  padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08);
+
+}
+
+.sidebar-header h3 {
+
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:.95rem;
+
+  color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;
+
+}
+
+.new-chat-btn {
+
+  width:100%;margin-top:12px;padding:10px;border-radius:12px;
+
+  background:linear-gradient(135deg,var(--green),var(--green-dark));
+
+  border:none;color:#fff;font-size:.82rem;font-weight:700;font-family:inherit;
+
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+
+  transition:all .2s;box-shadow:0 3px 12px rgba(0,200,150,.3);
+
+}
+
+.new-chat-btn:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(0,200,150,.45)}
+
+
+
+.sidebar-section {
+
+  padding:14px 14px 6px;
+
+  font-size:.68rem;font-weight:700;color:rgba(255,255,255,.3);
+
+  text-transform:uppercase;letter-spacing:.1em;
+
+}
+
+.sidebar-items {
+
+  flex:1;overflow-y:auto;padding:0 10px;
+
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;
+
+}
+
+.sidebar-items::-webkit-scrollbar{width:3px}
+
+.sidebar-items::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1)}
+
+
+
+.chat-item {
+
+  padding:10px 12px;border-radius:11px;cursor:pointer;
+
+  display:flex;align-items:center;gap:9px;margin-bottom:3px;
+
+  transition:background .15s;color:rgba(255,255,255,.65);
+
+  font-size:.82rem;font-weight:500;
+
+}
+
+.chat-item:hover{background:rgba(255,255,255,.08);color:#fff}
+
+.chat-item.active{background:rgba(0,200,150,.15);color:var(--green)}
+
+.chat-item-icon{font-size:15px;flex-shrink:0}
+
+.chat-item-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+
+
+.mode-section {
+
+  padding:10px;border-top:1px solid rgba(255,255,255,.08);
+
+}
+
+/* Subjects are now chosen via the picker button */
+.mode-section{display:none}
+
+.mode-section-title {
+
+  font-size:.67rem;color:rgba(255,255,255,.3);font-weight:700;
+
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;padding-left:4px;
+
+}
+
+.mode-chips {
+
+  display:flex;flex-direction:column;gap:2px;
+
+}
+
+.mode-chip {
+
+  padding:8px 12px;border-radius:9px;font-size:.79rem;font-weight:600;
+
+  cursor:pointer;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:8px;
+
+  border:none;background:none;font-family:inherit;text-align:left;width:100%;
+
+  transition:all .15s;
+
+}
+
+.mode-chip:hover{background:rgba(255,255,255,.07);color:#fff}
+
+.mode-chip.active{background:rgba(0,200,150,.18);color:var(--green)}
+
+
+
+.sidebar-footer {
+
+  padding:12px 10px;border-top:1px solid rgba(255,255,255,.08);
+
+  display:flex;flex-direction:column;gap:4px;
+
+}
+
+.sidebar-footer-btn {
+
+  padding:9px 12px;border-radius:9px;font-size:.8rem;font-weight:600;
+
+  cursor:pointer;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:8px;
+
+  border:none;background:none;font-family:inherit;text-align:left;width:100%;
+
+  transition:all .15s;
+
+}
+
+.sidebar-footer-btn:hover{background:rgba(255,255,255,.07);color:#fff}
+
+.sidebar-footer-btn.danger:hover{background:rgba(220,38,38,.15);color:#fca5a5}
+
+
+
+/* ── CHAT AREA ── */
+
+.chat-area {
+
+  flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);
+
+}
+
+
+
+/* Mode bar */
+
+.mode-bar {
+
+  padding:7px 14px;background:#fff;border-bottom:1px solid var(--border);
+
+  display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;
+
+}
+
+/* Subject picker button (replaces chips) */
+.subject-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 12px;border-radius:999px;
+  border:1.5px solid var(--border);
+  background:#fff;color:var(--text);
+  cursor:pointer;font-weight:700;font-size:.75rem;
+}
+.subject-btn:hover{background:var(--green-light);border-color:var(--green)}
+.subject-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 10px;border-radius:999px;
+  background:rgba(0,200,150,.10);
+  border:1px solid rgba(0,200,150,.22);
+  color:var(--green-dark);font-weight:800;font-size:.72rem;
+}
+
+/* Subject picker overlay */
+#subjectPicker{
+  display:none;position:fixed;inset:0;z-index:1200;
+  background:rgba(0,0,0,.55);
+  align-items:center;justify-content:center;
+}
+#subjectPicker.open{display:flex}
+.picker-card{
+  width:min(520px,calc(100vw - 32px));
+  background:#fff;border:1px solid #e5e7eb;border-radius:18px;
+  box-shadow:0 24px 80px rgba(0,0,0,.35);
+  overflow:hidden;
+}
+.picker-head{
+  padding:14px 16px;border-bottom:1px solid #eef2f7;
+  display:flex;align-items:center;gap:10px;
+}
+.picker-head h3{font-size:.95rem;color:#111827}
+.picker-close{
+  margin-left:auto;width:34px;height:34px;border:none;border-radius:10px;
+  background:#f3f4f6;cursor:pointer;font-size:18px;line-height:1;
+}
+.picker-close:hover{background:#e5e7eb}
+.picker-grid{
+  padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+@media(max-width:560px){.picker-grid{grid-template-columns:1fr}}
+.picker-item{
+  border:1.5px solid #e5e7eb;border-radius:14px;background:#fff;
+  padding:12px 12px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;
+  transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.picker-item:hover{transform:translateY(-1px);border-color:rgba(0,200,150,.55);box-shadow:0 10px 24px rgba(0,0,0,.08)}
+.picker-ico{font-size:18px;line-height:1;margin-top:2px}
+.picker-txt strong{display:block;font-size:.85rem;color:#111827}
+.picker-txt span{display:block;font-size:.74rem;color:#6b7280;margin-top:2px;line-height:1.35}
+
+.mode-bar::-webkit-scrollbar{display:none}
+
+.mchip {
+
+  white-space:nowrap;padding:5px 12px;border-radius:20px;
+
+  font-size:.71rem;font-weight:600;border:1.5px solid var(--border);
+
+  background:#fff;color:var(--muted);cursor:pointer;transition:all .15s;flex-shrink:0;
+
+}
+
+.mchip:hover,.mchip.active {
+
+  background:var(--green);border-color:var(--green);color:#fff;
+
+  transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,200,150,.25);
+
+}
+
+
+
+/* Messages */
+
+.messages {
+
+  flex:1;overflow-y:auto;padding:18px 18px 10px;
+
+  display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth;
+
+}
+
+.messages::-webkit-scrollbar{width:4px}
+
+.messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+
+
+/* Welcome */
+
+.welcome {
+
+  text-align:center;padding:28px 16px;
+
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+
+  animation:slideUp .4s ease;
+
+}
+
+.welcome-icon{font-size:52px;line-height:1;margin-bottom:4px}
+
+.welcome h2{font-family:'Baloo 2',cursive;font-weight:700;font-size:1.4rem;color:var(--text)}
+
+.welcome p{font-size:.83rem;color:var(--muted);max-width:320px;line-height:1.6}
+
+.welcome-urdu{font-family:'Noto Nastaliq Urdu',serif;font-size:1.05rem;color:var(--green-dark);direction:rtl;margin-top:2px}
+
+.sug-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:400px;margin-top:8px}
+
+.sug {
+
+  background:var(--green-light);border:1.5px solid var(--border);
+
+  border-radius:12px;padding:9px 11px;font-size:.73rem;font-weight:600;
+
+  color:var(--green-dark);cursor:pointer;text-align:left;transition:all .15s;line-height:1.4;
+
+  font-family:inherit;
+
+}
+
+.sug:hover{background:var(--green);color:#fff;border-color:var(--green);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,200,150,.2)}
+
+.sug span{display:block;font-size:.95rem;margin-bottom:2px}
+
+
+
+/* Rows */
+
+.row{display:flex;gap:10px;align-items:flex-end;animation:fadeUp .25s ease}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.row.user{flex-direction:row-reverse}
+
+.av{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+
+.av.ai{background:linear-gradient(135deg,#00c896,#00a07a)}
+
+.av.user{background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+
+
+
+/* Bubbles */
+
+.bubble{max-width:80%;padding:11px 15px;border-radius:18px;font-size:.875rem;line-height:1.7;word-break:break-word}
+
+.bubble.ai{background:#fff;border:1.5px solid var(--border);color:var(--text);border-bottom-left-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+
+.bubble.user{background:var(--green);color:#fff;border-bottom-right-radius:4px}
+
+.bubble.urdu{font-family:'Noto Nastaliq Urdu',serif;direction:rtl;text-align:right;font-size:.95rem;line-height:2.1}
+
+.bubble-time{font-size:.62rem;margin-top:5px;opacity:.55;text-align:right}
+
+.bubble.ai .bubble-time{text-align:left}
+
+.bubble pre{background:#0f2e24;border-radius:10px;padding:12px 14px;overflow-x:auto;margin:8px 0;border:1px solid #1a4a38}
+
+.bubble pre code{color:#7fffda;font-family:'Courier New',monospace;font-size:.78rem;background:none;border:none;padding:0;white-space:pre}
+
+.bubble code{background:#f0faf6;border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-family:monospace;font-size:.82em}
+
+.bubble.user code{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3)}
+
+.copy-btn{display:inline-block;margin-top:4px;font-size:.65rem;background:var(--green-light);color:var(--green-dark);border:1px solid var(--border);border-radius:6px;padding:2px 8px;cursor:pointer;font-weight:600}
+
+.copy-btn:hover{background:var(--green);color:#fff}
+
+.bubble.error{background:#fff5f5;border-color:#fecaca;color:#dc2626}
+
+
+
+/* Typing */
+
+.typing-indicator{display:flex;align-items:center;justify-content:center;margin:10px 0;}
+
+.typing-bubble{background:#fff;border:1.5px solid var(--border);border-radius:18px;border-bottom-left-radius:4px;padding:13px 17px;display:flex;gap:5px;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,.05)}
+
+.typing-dots{color:var(--green);font-size:12px;animation:typing 1.4s infinite}
+
+.typing-text{color:var(--muted);font-size:12px;margin-left:10px}
+
+@keyframes typing{0%,60%,100%{opacity:1}30%{opacity:.5}100%{opacity:0}}
+
+@keyframes tb{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-7px)}}
+
+
+
+/* Input */
+
+.input-area{padding:10px 15px 14px;border-top:1px solid var(--border);background:#fff;flex-shrink:0}
+
+.top-row{display:flex;gap:6px;margin-bottom:7px;align-items:center}
+
+.lang-btn{padding:4px 11px;border-radius:20px;font-size:.69rem;font-weight:600;border:1.5px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all .15s;font-family:inherit}
+
+.lang-btn.active{background:var(--green);border-color:var(--green);color:#fff}
+
+.subj-lbl{margin-left:auto;font-size:.69rem;color:var(--muted)}
+
+.subj-lbl strong{color:var(--green-dark)}
+
+.input-row{display:flex;gap:8px;align-items:flex-end}
+
+.input-box{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:16px;padding:10px 15px;font-size:.875rem;font-family:inherit;color:var(--text);resize:none;outline:none;transition:border-color .15s;max-height:120px;line-height:1.5}
+
+.input-box:focus{border-color:var(--green)}
+
+.input-box::placeholder{color:var(--muted);font-size:.82rem}
+
+.input-box.urdu-mode{font-family:'Noto Nastaliq Urdu',serif;direction:rtl;font-size:1rem}
+
+.send-btn{width:44px;height:44px;background:linear-gradient(135deg,#00c896,#00a07a);border:none;border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;box-shadow:0 3px 14px rgba(0,200,150,.35)}
+
+.send-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,200,150,.45)}
+
+.send-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.send-btn svg{width:18px;height:18px}
+
+.footer-note{text-align:center;font-size:.64rem;color:var(--muted);margin-top:7px}
+
+.footer-note span{color:var(--green-dark);font-weight:600}
+
+
+
+/* ══════════════════════════ SETTINGS OVERLAY ══════════════════════════ */
+
+#settingsScreen {
+
+  display:none;position:fixed;inset:0;z-index:100;
+
+  background:linear-gradient(135deg,#0f2e24,#1a4a38);
+
+  flex-direction:column;overflow:hidden;
+
+  animation:slideUp .3s ease;
+
+}
+
+#settingsScreen.open{display:flex}
+
+
+
+.settings-header {
+
+  height:var(--header-h);
+
+  background:rgba(0,0,0,.2);
+
+  display:flex;align-items:center;padding:0 20px;gap:14px;
+
+  flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.08);
+
+}
+
+.settings-header h2 {
+
+  font-family:'Baloo 2',cursive;font-weight:700;font-size:1.2rem;color:#fff;
+
+}
+
+.settings-back {
+
+  width:36px;height:36px;background:rgba(255,255,255,.1);border:none;
+
+  border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+
+  color:#fff;font-size:18px;transition:background .2s;
+
+}
+
+.settings-back:hover{background:rgba(255,255,255,.2)}
+
+
+
+.settings-body {
+
+  flex:1;overflow-y:auto;padding:28px 24px;
+
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;
+
+}
+
+.settings-body::-webkit-scrollbar{width:4px}
+
+.settings-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1)}
+
+
+
+.settings-section {
+
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
+
+  border-radius:18px;padding:22px;margin-bottom:18px;
+
+}
+
+.settings-section-title {
+
+  font-size:.72rem;font-weight:700;color:var(--green);
+
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;
+
+  display:flex;align-items:center;gap:8px;
+
+}
+
+.settings-row {
+
+  display:flex;align-items:center;gap:12px;padding:12px 0;
+
+  border-bottom:1px solid rgba(255,255,255,.06);
+
+}
+
+.settings-row:last-child{border-bottom:none}
+
+.settings-row-icon{font-size:20px;width:28px;text-align:center;flex-shrink:0}
+
+.settings-row-info{flex:1}
+
+.settings-row-info h4{font-size:.87rem;font-weight:600;color:#fff}
+
+.settings-row-info p{font-size:.75rem;color:rgba(255,255,255,.4);margin-top:2px}
+
+.settings-row-val {
+
+  font-size:.8rem;font-weight:600;color:var(--green);
+
+  background:rgba(0,200,150,.1);padding:4px 10px;border-radius:8px;
+
+}
+
+.settings-input-row {
+
+  display:flex;flex-direction:column;gap:8px;padding:12px 0;
+
+  border-bottom:1px solid rgba(255,255,255,.06);
+
+}
+
+.settings-input-row:last-child{border-bottom:none}
+
+.settings-input-row label {
+
+  font-size:.74rem;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.03em;
+
+}
+
+.settings-input {
+
+  background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
+
+  border-radius:10px;padding:10px 14px;font-size:.86rem;font-family:inherit;
+
+  color:#fff;outline:none;transition:border-color .2s;
+
+}
+
+.settings-input:focus{border-color:var(--green)}
+
+.settings-input::placeholder{color:rgba(255,255,255,.3)}
+
+.settings-btn {
+
+  padding:10px 18px;border-radius:11px;border:none;font-size:.82rem;font-weight:700;
+
+  font-family:inherit;cursor:pointer;transition:all .2s;
+
+}
+
+.settings-btn.primary{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;box-shadow:0 3px 12px rgba(0,200,150,.3)}
+
+.settings-btn.primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(0,200,150,.45)}
+
+.settings-btn.danger{background:rgba(220,38,38,.15);color:#fca5a5;border:1px solid rgba(220,38,38,.2)}
+
+.settings-btn.danger:hover{background:rgba(220,38,38,.25)}
+
+.settings-tag {
+
+  display:inline-flex;align-items:center;gap:5px;
+
+  padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600;
+
+}
+
+.settings-tag.green{background:rgba(0,200,150,.15);color:var(--green)}
+
+.settings-tag.red{background:rgba(220,38,38,.15);color:#fca5a5}
+
+
+
+/* API key in settings */
+
+.api-field-wrap{display:flex;gap:8px}
+
+.api-field-wrap .settings-input{flex:1}
+
+
+
+/* Toast */
+
+.toast {
+
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+
+  background:#0f2e24;color:#7fffda;padding:9px 20px;border-radius:22px;
+
+  font-size:.78rem;font-weight:600;z-index:9999;
+
+  box-shadow:0 4px 20px rgba(0,0,0,.25);pointer-events:none;
+
+  animation:toastIn .3s ease;
+
+}
+
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+
+
+/* Mobile overlay for sidebar */
+.sidebar-overlay {
+  display:none;position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:40;
+}
+@media(max-width:700px){
+  .sidebar-overlay.visible{display:block}
+  .header-badge{display:none}
+}
+
+/* ══════════════════════════ DARK MODE ══════════════════════════ */
+body.dark {
+  --bg:#0d1f1a;--surface:#1a2e26;--text:#e0fff6;--muted:#7fffda;
+  --border:#1e3d30;--shadow:0 4px 24px rgba(0,200,150,.08);
+}
+body.dark .chat-area{background:#0d1f1a}
+body.dark .bubble.ai{background:#1a2e26;color:#e0fff6;border-color:#1e3d30}
+body.dark .input-area{background:#111f1a;border-color:#1e3d30}
+body.dark .input-box{background:#0d1f1a;color:#e0fff6;border-color:#1e3d30}
+body.dark .mode-bar{background:#111f1a;border-color:#1e3d30}
+body.dark .mchip{background:#1a2e26;color:#7fffda;border-color:#1e3d30}
+body.dark .welcome h2{color:#e0fff6}
+body.dark .sug{background:#1a2e26;color:#7fffda;border-color:#1e3d30}
+body.dark .picker-card{background:#1a2e26;border-color:#1e3d30}
+body.dark .picker-head{border-color:#1e3d30}
+body.dark .picker-head h3{color:#e0fff6}
+body.dark .picker-item{background:#1a2e26;border-color:#1e3d30}
+body.dark .picker-txt strong{color:#e0fff6}
+body.dark .picker-txt span{color:#7fffda}
+body.dark .picker-close{background:#0d1f1a;color:#7fffda}
+
+/* ══════════════════════════ STUDY REMINDER BANNER ══════════════════════════ */
+#studyBanner {
+  display:none;background:linear-gradient(135deg,#ff9f1c,#ff6b35);
+  color:#fff;padding:8px 16px;font-size:.8rem;font-weight:600;
+  text-align:center;position:relative;flex-shrink:0;
+  animation:slideDown .4s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+#studyBanner.show{display:flex;align-items:center;justify-content:center;gap:10px}
+.banner-close{background:rgba(255,255,255,.25);border:none;color:#fff;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.streak-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-size:.75rem}
+
+/* ══════════════════════════ BUBBLE ACTION BUTTONS ══════════════════════════ */
+.bubble-actions {
+  display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;
+}
+.bact-btn {
+  padding:3px 10px;border-radius:20px;font-size:.65rem;font-weight:600;
+  border:1.5px solid var(--border);background:#fff;color:var(--muted);
+  cursor:pointer;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:4px;
+}
+body.dark .bact-btn{background:#1a2e26;color:#7fffda;border-color:#1e3d30}
+.bact-btn:hover{background:var(--green);border-color:var(--green);color:#fff}
+.bact-btn.liked{background:#dcfce7;border-color:#16a34a;color:#16a34a}
+.bact-btn.disliked{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.bact-btn.saved{background:#fef9c3;border-color:#ca8a04;color:#ca8a04}
+
+/* ══════════════════════════ NOTES PANEL ══════════════════════════ */
+#notesPanel {
+  display:none;position:fixed;right:0;top:0;bottom:0;width:320px;
+  background:#fff;border-left:2px solid var(--border);z-index:200;
+  flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.12);
+  animation:slideFromRight .3s ease;
+}
+@keyframes slideFromRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
+#notesPanel.open{display:flex}
+body.dark #notesPanel{background:#1a2e26;border-color:#1e3d30}
+.notes-header{padding:16px;background:linear-gradient(135deg,#00c896,#00a07a);color:#fff;display:flex;align-items:center;gap:10px}
+.notes-header h3{font-family:'Baloo 2',cursive;font-weight:700;flex:1}
+.notes-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px}
+.notes-list{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.note-item{background:var(--green-light);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;font-size:.78rem;color:var(--text);line-height:1.5;position:relative}
+body.dark .note-item{background:#0d1f1a;color:#e0fff6;border-color:#1e3d30}
+.note-item-time{font-size:.62rem;color:var(--muted);margin-top:4px}
+.note-del{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted)}
+.notes-empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:.82rem}
+
+/* ══════════════════════════ QUIZ MODE ══════════════════════════ */
+#quizModal {
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.6);align-items:center;justify-content:center;
+}
+#quizModal.open{display:flex}
+.quiz-card{
+  width:min(560px,calc(100vw - 24px));max-height:90vh;
+  background:#fff;border-radius:22px;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 24px 80px rgba(0,0,0,.3);
+}
+body.dark .quiz-card{background:#1a2e26;color:#e0fff6}
+.quiz-header{padding:18px 20px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;display:flex;align-items:center;gap:12px}
+.quiz-header h3{font-family:'Baloo 2',cursive;font-weight:700;font-size:1.1rem;flex:1}
+.quiz-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:18px}
+.quiz-setup{padding:20px;display:flex;flex-direction:column;gap:14px}
+.quiz-setup label{font-size:.8rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px}
+.quiz-setup input,.quiz-setup select{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);font-size:.88rem;font-family:inherit;color:var(--text);background:#fff;outline:none}
+body.dark .quiz-setup input,body.dark .quiz-setup select{background:#0d1f1a;color:#e0fff6;border-color:#1e3d30}
+.quiz-setup input:focus,.quiz-setup select:focus{border-color:var(--green)}
+.quiz-start-btn{padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s}
+.quiz-start-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(37,99,235,.4)}
+.quiz-q-area{padding:20px;flex:1;overflow-y:auto}
+.quiz-progress{font-size:.72rem;color:var(--muted);margin-bottom:4px;text-align:right}
+.quiz-progress-bar{height:6px;background:#e5e7eb;border-radius:4px;margin-bottom:16px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,#2563eb,#00c896);border-radius:4px;transition:width .4s ease}
+.quiz-question{font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:14px;line-height:1.6}
+body.dark .quiz-question{color:#e0fff6}
+.quiz-options{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{padding:11px 15px;border-radius:12px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:.85rem;font-weight:500;cursor:pointer;text-align:left;transition:all .15s;font-family:inherit}
+body.dark .quiz-opt{background:#0d1f1a;color:#e0fff6;border-color:#1e3d30}
+.quiz-opt:hover:not(:disabled){background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
+.quiz-opt.correct{background:#dcfce7;border-color:#16a34a;color:#16a34a}
+.quiz-opt.wrong{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.quiz-next-btn{margin-top:14px;padding:10px 20px;border-radius:10px;border:none;background:var(--green);color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:.85rem;display:none}
+.quiz-result{padding:24px;text-align:center}
+.quiz-score-circle{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#00c896,#2563eb);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#fff;font-size:1.6rem;font-weight:800}
+.quiz-result h3{font-size:1.2rem;font-weight:800;color:var(--text);margin-bottom:8px}
+body.dark .quiz-result h3{color:#e0fff6}
+.quiz-result p{font-size:.85rem;color:var(--muted);line-height:1.6}
+.quiz-restart-btn{margin-top:16px;padding:11px 24px;border-radius:12px;border:none;background:linear-gradient(135deg,#00c896,#00a07a);color:#fff;font-weight:700;cursor:pointer;font-size:.88rem;font-family:inherit}
+
+/* ══════════════════════════ MINDMAP MODAL ══════════════════════════ */
+#mindmapModal {
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.7);align-items:center;justify-content:center;
+}
+#mindmapModal.open{display:flex}
+.mindmap-card{
+  width:min(900px,calc(100vw - 24px));height:min(600px,90vh);
+  background:#fff;border-radius:22px;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 24px 80px rgba(0,0,0,.3);
+}
+body.dark .mindmap-card{background:#0d1f1a}
+.mindmap-header{padding:14px 18px;background:linear-gradient(135deg,#ff9f1c,#ff6b35);color:#fff;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.mindmap-header h3{font-family:'Baloo 2',cursive;font-weight:700;flex:1}
+.mindmap-dl-btn{background:rgba(255,255,255,.25);border:none;color:#fff;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.78rem}
+.mindmap-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:18px}
+#mindmapFrame{flex:1;border:none;width:100%;background:#fff}
+
+/* Mindmap CSS that will be injected into iframe */
+#mindmapStyles{display:none}
+
+/* ══════════════════════════ VOICE CHAT ══════════════════════════ */
+#voiceChatModal {
+  display:none;position:fixed;inset:0;z-index:600;
+  background:rgba(15,46,36,.95);align-items:center;justify-content:center;
+  flex-direction:column;gap:24px;
+}
+#voiceChatModal.open{display:flex}
+.voice-orb {
+  width:140px;height:140px;border-radius:50%;
+  background:linear-gradient(135deg,#00c896,#2563eb);
+  display:flex;align-items:center;justify-content:center;
+  font-size:52px;cursor:pointer;position:relative;
+  box-shadow:0 0 0 0 rgba(0,200,150,.4);
+  transition:transform .2s;
+}
+.voice-orb.listening{animation:orbPulse 1.5s infinite}
+.voice-orb.speaking{animation:orbSpeak 0.8s infinite alternate}
+@keyframes orbPulse{0%{box-shadow:0 0 0 0 rgba(0,200,150,.5)}70%{box-shadow:0 0 0 40px rgba(0,200,150,0)}100%{box-shadow:0 0 0 0 rgba(0,200,150,0)}}
+@keyframes orbSpeak{from{transform:scale(1)}to{transform:scale(1.08)}}
+.voice-status{color:#7fffda;font-size:.9rem;font-weight:600;text-align:center}
+.voice-transcript{color:rgba(255,255,255,.7);font-size:.82rem;text-align:center;max-width:340px;min-height:40px;line-height:1.5}
+.voice-ai-reply{color:#fff;font-size:.85rem;text-align:center;max-width:380px;min-height:40px;line-height:1.6;background:rgba(255,255,255,.08);border-radius:14px;padding:12px 16px}
+.voice-controls{display:flex;gap:12px;align-items:center}
+.voice-end-btn{padding:10px 24px;border-radius:20px;border:none;background:#dc2626;color:#fff;font-weight:700;cursor:pointer;font-family:inherit}
+.voice-voice-select{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-family:inherit;font-size:.8rem}
+
+/* ══════════════════════════ COMPLAINT/DISLIKE MODAL ══════════════════════════ */
+#complaintModal {
+  display:none;position:fixed;inset:0;z-index:700;
+  background:rgba(0,0,0,.6);align-items:center;justify-content:center;
+}
+#complaintModal.open{display:flex}
+.complaint-card{
+  width:min(420px,calc(100vw - 24px));
+  background:#fff;border-radius:20px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+body.dark .complaint-card{background:#1a2e26}
+.complaint-header{padding:16px 20px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;display:flex;align-items:center;gap:10px}
+.complaint-header h3{font-weight:700;flex:1;font-family:'Baloo 2',cursive}
+.complaint-close{background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px}
+.complaint-body{padding:20px;display:flex;flex-direction:column;gap:12px}
+.complaint-field label{display:block;font-size:.74rem;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+.complaint-field input,.complaint-field textarea{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);font-size:.86rem;font-family:inherit;color:var(--text);background:#fff;outline:none;resize:none}
+body.dark .complaint-field input,body.dark .complaint-field textarea{background:#0d1f1a;color:#e0fff6;border-color:#1e3d30}
+.complaint-field input:focus,.complaint-field textarea:focus{border-color:#dc2626}
+.complaint-submit{padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit}
+.complaint-submit:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(220,38,38,.4)}
+
+/* ══════════════════════════ IMAGE GENERATION ══════════════════════════ */
+.ai-image-wrap{margin:8px 0;border-radius:14px;overflow:hidden;border:1.5px solid var(--border);max-width:320px}
+.ai-image-wrap img{width:100%;display:block}
+.ai-image-caption{padding:6px 10px;font-size:.7rem;color:var(--muted);background:var(--green-light)}
+.img-gen-loading{padding:14px;text-align:center;color:var(--green);font-size:.8rem;background:var(--green-light);border-radius:14px;border:1.5px dashed var(--green)}
+
+/* ══════════════════════════ FILE UPLOAD ══════════════════════════ */
+.file-btn{
+  width:38px;height:38px;background:rgba(255,255,255,.15);border:none;
+  border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:18px;transition:background .2s;flex-shrink:0;
+}
+.file-btn:hover{background:rgba(255,255,255,.28)}
+.file-preview{
+  display:flex;align-items:center;gap:8px;padding:7px 12px;
+  background:var(--green-light);border:1.5px solid var(--border);
+  border-radius:10px;margin-bottom:6px;font-size:.78rem;
+}
+.file-preview-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--green-dark);font-weight:600}
+.file-preview-remove{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px}
+
+/* ══════════════════════════ CHAT SEARCH ══════════════════════════ */
+#chatSearch{
+  display:none;padding:8px 14px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+body.dark #chatSearch{background:#111f1a;border-color:#1e3d30}
+#chatSearch.open{display:flex;gap:8px;align-items:center}
+.search-input{flex:1;padding:8px 12px;border-radius:10px;border:1.5px solid var(--border);font-size:.84rem;font-family:inherit;color:var(--text);background:var(--bg);outline:none}
+body.dark .search-input{background:#0d1f1a;color:#e0fff6;border-color:#1e3d30}
+.search-input:focus{border-color:var(--green)}
+.search-close-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px}
+.msg-highlight{background:#fef08a}
+
+/* ══════════════════════════ EXPORT BUTTON ══════════════════════════ */
+/* in header */
+
+/* ══════════════════════════ THEME PICKER ══════════════════════════ */
+.theme-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.theme-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .2s}
+.theme-swatch.active,.theme-swatch:hover{border-color:#fff;transform:scale(1.15)}
+
+/* ══════════════════════════ STREAMING ══════════════════════════ */
+.streaming-cursor::after{content:'▋';animation:blink .7s infinite;color:var(--green)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ══════════════════════════ MOBILE IMPROVEMENTS ══════════════════════════ */
+@media(max-width:700px){
+  .bubble{max-width:92%}
+  .quiz-card,.mindmap-card,.complaint-card{margin:12px}
+  #notesPanel{width:100%}
+  .voice-orb{width:110px;height:110px;font-size:40px}
+  .bact-btn{font-size:.6rem;padding:3px 8px}
+  .header-right .header-badge{display:none}
+}
+
+/* ══════════════════════════ ANIMATED WELCOME TIPS ══════════════════════════ */
+.tips-carousel{display:flex;gap:8px;overflow-x:auto;padding:4px 0;scrollbar-width:none;width:100%;max-width:440px}
+.tips-carousel::-webkit-scrollbar{display:none}
+.tip-card{flex-shrink:0;background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;border-radius:14px;padding:10px 14px;font-size:.74rem;font-weight:600;line-height:1.4;width:160px;animation:fadeUp .5s ease both}
+.tip-card span{display:block;font-size:1.1rem;margin-bottom:4px}
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- ══════════════ AUTH SCREEN ══════════════ -->
+
+<div id="authScreen">
+
+  <div class="auth-card">
+
+    <div class="auth-logo">
+
+      <span class="logo-icon">🎓</span>
+
+      <h1>StudyBot AI</h1>
+
+      <p>Pakistan's Smart Homework Helper · ہوم ورک مددگار</p>
+
+    </div>
+
+
+
+    <div class="auth-tabs">
+
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+
+      <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Create Account</button>
+
+    </div>
+
+
+
+    <div id="authError" class="auth-error"></div>
+
+
+
+    <!-- LOGIN FORM -->
+
+    <div id="loginForm">
+
+      <div class="auth-field">
+
+        <label>Email Address</label>
+
+        <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+
+      </div>
+
+      <div class="auth-field">
+
+        <label>Password</label>
+
+        <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+
+      </div>
+
+      <label class="remember-row">
+
+        <input type="checkbox" id="loginRemember" checked>
+
+        <span>Remember me on this device</span>
+
+      </label>
+
+      <button class="auth-btn" id="loginBtn" onclick="doLogin()">Login to StudyBot →</button>
+
+    </div>
+
+
+
+    <!-- REGISTER FORM -->
+
+    <div id="registerForm" style="display:none">
+
+      <div class="auth-field">
+
+        <label>Full Name / Username</label>
+
+        <input type="text" id="regUsername" placeholder="e.g. Muhammad Abdullah" autocomplete="name">
+
+      </div>
+
+      <div class="auth-field">
+
+        <label>Email Address</label>
+
+        <input type="email" id="regEmail" placeholder="you@example.com" autocomplete="email">
+
+      </div>
+
+      <div class="auth-field">
+
+        <label>Password</label>
+
+        <input type="password" id="regPassword" placeholder="Min. 6 characters" autocomplete="new-password">
+
+      </div>
+
+      <label class="remember-row">
+
+        <input type="checkbox" id="regRemember" checked>
+
+        <span>Remember me on this device</span>
+
+      </label>
+
+      <button class="auth-btn" id="registerBtn" onclick="doRegister()">Create Account →</button>
+
+    </div>
+
+
+
+    <div class="auth-urdu">خوش آمدید — سیکھنے کا سفر شروع کریں</div>
+
+  </div>
+
+</div>
+
+
+
+<!-- ══════════════ QUIZ MODAL ══════════════ -->
+<div id="quizModal">
+  <div class="quiz-card">
+    <div class="quiz-header">
+      <span>📊</span>
+      <h3>Quiz / MCQ Mode</h3>
+      <button class="quiz-close" onclick="closeQuiz()">×</button>
+    </div>
+    <div id="quizSetup" class="quiz-setup">
+      <div>
+        <label>Topic</label>
+        <input type="text" id="quizTopic" placeholder="e.g. Photosynthesis, Newton's Laws, Pakistan History...">
+      </div>
+      <div>
+        <label>Number of Questions</label>
+        <select id="quizCount">
+          <option value="5">5 Questions</option>
+          <option value="10" selected>10 Questions</option>
+          <option value="15">15 Questions</option>
+          <option value="20">20 Questions</option>
+        </select>
+      </div>
+      <div>
+        <label>Difficulty</label>
+        <select id="quizDiff">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <button class="quiz-start-btn" onclick="startQuiz()">🚀 Generate Quiz</button>
+    </div>
+    <div id="quizQArea" class="quiz-q-area" style="display:none">
+      <div class="quiz-progress" id="quizProgress">Q 1 / 10</div>
+      <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill" style="width:10%"></div></div>
+      <div class="quiz-question" id="quizQuestion">Loading...</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <button class="quiz-next-btn" id="quizNextBtn" onclick="nextQuizQ()">Next →</button>
+    </div>
+    <div id="quizResult" class="quiz-result" style="display:none">
+      <div class="quiz-score-circle" id="quizScoreCircle">0/0</div>
+      <h3 id="quizResultTitle">Quiz Complete!</h3>
+      <p id="quizResultMsg"></p>
+      <button class="quiz-restart-btn" onclick="restartQuiz()">🔄 Try Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MINDMAP MODAL ══════════════ -->
+<div id="mindmapModal">
+  <div class="mindmap-card">
+    <div class="mindmap-header">
+      <span>🧠</span>
+      <h3 id="mindmapTitle">Mindmap</h3>
+      <button class="mindmap-dl-btn" onclick="downloadMindmap()">⬇️ Download PNG</button>
+      <button class="mindmap-close" onclick="closeMindmap()">×</button>
+    </div>
+    <iframe id="mindmapFrame" title="Mindmap"></iframe>
+  </div>
+</div>
+
+<!-- ══════════════ VOICE CHAT MODAL ══════════════ -->
+<div id="voiceChatModal">
+  <div class="voice-orb" id="voiceOrb" onclick="toggleVoiceListening()">🎤</div>
+  <div class="voice-status" id="voiceStatus">Tap to speak</div>
+  <div class="voice-transcript" id="voiceTranscript">Your words will appear here...</div>
+  <div class="voice-ai-reply" id="voiceAiReply">StudyBot will reply here...</div>
+  <div class="voice-controls">
+    <select class="voice-voice-select" id="voiceSelect">
+      <option value="">Loading voices...</option>
+    </select>
+    <label class="voice-autocontinue" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.75);font-size:13px;margin:0 8px;cursor:pointer;user-select:none;">
+      <input type="checkbox" id="voiceAutoContinue" checked style="cursor:pointer">
+      Auto-continue
+    </label>
+    <button class="voice-end-btn" onclick="endVoiceChat()">✕ End Voice Chat</button>
+  </div>
+  <div class="voice-unsupported" id="voiceUnsupported" style="display:none;color:#ff6b6b;font-size:13px;text-align:center;margin-top:8px;padding:0 20px;">
+    🎤 Voice input isn't supported in this browser. Please use Chrome or Edge, or type your question instead.
+  </div>
+</div>
+
+<!-- ══════════════ COMPLAINT / DISLIKE MODAL ══════════════ -->
+<div id="complaintModal">
+  <div class="complaint-card">
+    <div class="complaint-header">
+      <span>👎</span>
+      <h3>Report an Issue</h3>
+      <button class="complaint-close" onclick="closeComplaint()">×</button>
+    </div>
+    <div class="complaint-body">
+      <div class="complaint-field">
+        <label>Your Name</label>
+        <input type="text" id="cName" placeholder="Muhammad Ali">
+      </div>
+      <div class="complaint-field">
+        <label>Email Address</label>
+        <input type="email" id="cEmail" placeholder="student@example.com">
+      </div>
+      <div class="complaint-field">
+        <label>Complaint / Feedback</label>
+        <textarea id="cMsg" rows="4" placeholder="Tell us what was wrong with the AI's reply..."></textarea>
+      </div>
+      <button class="complaint-submit" onclick="submitComplaint()">📤 Submit Feedback</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ NOTES PANEL ══════════════ -->
+<div id="notesPanel">
+  <div class="notes-header">
+    <span>📝</span>
+    <h3>Saved Notes</h3>
+    <button class="notes-close" onclick="closeNotes()">×</button>
+  </div>
+  <div class="notes-list" id="notesList">
+    <div class="notes-empty">No notes saved yet.<br>Click 💾 under any AI reply to save it!</div>
+  </div>
+</div>
+
+<!-- ══════════════ SETTINGS SCREEN ══════════════ -->
+
+<div id="settingsScreen">
+
+  <div class="settings-header">
+
+    <button class="settings-back" onclick="closeSettings()">←</button>
+
+    <h2>⚙️ Settings</h2>
+
+  </div>
+
+  <div class="settings-body">
+
+
+
+    <!-- Account -->
+
+    <div class="settings-section">
+
+      <div class="settings-section-title">👤 Account</div>
+
+      <div class="settings-row">
+
+        <div class="settings-row-icon">🙍</div>
+
+        <div class="settings-row-info">
+
+          <h4 id="settingNameDisplay">—</h4>
+
+          <p id="settingEmailDisplay">—</p>
+
+        </div>
+
+        <span class="settings-tag green">Active</span>
+
+      </div>
+
+      <div class="settings-row">
+
+        <div class="settings-row-icon">🎓</div>
+
+        <div class="settings-row-info"><h4>Plan</h4><p>Free tier — unlimited messages</p></div>
+
+        <span class="settings-row-val">Free</span>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- API Key -->
+
+    <div class="settings-section">
+
+      <div class="settings-section-title">🔑 OpenRouter API Key</div>
+
+      <div class="settings-input-row">
+
+        <label>Your API Key</label>
+
+        <div class="api-field-wrap">
+
+          <input class="settings-input" type="password" id="settingsApiKey" value="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" readonly>
+
+          <button class="settings-btn primary" onclick="saveApiKey()">Save Key</button>
+
+        </div>
+
+      </div>
+
+      <div class="settings-row" style="padding-top:10px">
+
+        <div class="settings-row-icon">🌐</div>
+
+        <div class="settings-row-info"><h4>Supabase Status</h4><p>Authentication connection</p></div>
+
+        <span id="fbStatus" class="settings-tag green">🟢 Connected</span>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Preferences -->
+
+    <div class="settings-section">
+
+      <div class="settings-section-title">🎨 Preferences</div>
+
+      <div class="settings-row">
+
+        <div class="settings-row-icon">🌍</div>
+
+        <div class="settings-row-info"><h4>Default Language</h4><p>Start new chats in this language</p></div>
+
+        <select class="settings-input" id="settingsLang" style="padding:5px 10px;width:auto">
+
+          <option value="en">English</option>
+
+          <option value="ur">اردو</option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Appearance -->
+    <div class="settings-section">
+      <div class="settings-section-title">🎨 Appearance</div>
+      <div class="settings-row">
+        <div class="settings-row-icon">🌙</div>
+        <div class="settings-row-info"><h4>Dark Mode</h4><p>Easy on eyes at night</p></div>
+        <button class="settings-btn primary" id="darkToggleBtn" onclick="toggleDarkMode()">Enable</button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-icon">🎨</div>
+        <div class="settings-row-info">
+          <h4>Theme Color</h4>
+          <p>Pick your accent color</p>
+          <div class="theme-swatches" id="themeSwatches">
+            <div class="theme-swatch active" style="background:#00c896" data-color="#00c896" data-dark="#00a07a" onclick="setTheme(this)" title="Emerald"></div>
+            <div class="theme-swatch" style="background:#2563eb" data-color="#2563eb" data-dark="#1d4ed8" onclick="setTheme(this)" title="Blue"></div>
+            <div class="theme-swatch" style="background:#7c3aed" data-color="#7c3aed" data-dark="#6d28d9" onclick="setTheme(this)" title="Purple"></div>
+            <div class="theme-swatch" style="background:#dc2626" data-color="#dc2626" data-dark="#b91c1c" onclick="setTheme(this)" title="Red"></div>
+            <div class="theme-swatch" style="background:#d97706" data-color="#d97706" data-dark="#b45309" onclick="setTheme(this)" title="Amber"></div>
+            <div class="theme-swatch" style="background:#059669" data-color="#059669" data-dark="#047857" onclick="setTheme(this)" title="Green"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Voice Settings -->
+    <div class="settings-section">
+      <div class="settings-section-title">🎙️ Voice Chat</div>
+      <div class="settings-row">
+        <div class="settings-row-icon">🔊</div>
+        <div class="settings-row-info"><h4>AI Voice</h4><p>Voice used for AI replies</p></div>
+        <select class="settings-input" id="settingsVoice" style="padding:5px 10px;width:auto" onchange="saveVoicePref()">
+          <option value="">Default</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Study Reminder -->
+    <div class="settings-section">
+      <div class="settings-section-title">🔔 Study Reminder</div>
+      <div class="settings-row">
+        <div class="settings-row-icon">⏰</div>
+        <div class="settings-row-info"><h4>Daily Reminder Time</h4><p>Get a push notification to study</p></div>
+        <input type="time" class="settings-input" id="reminderTime" style="padding:5px 10px;width:auto" value="17:00" onchange="saveReminderTime()">
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-icon">📲</div>
+        <div class="settings-row-info"><h4>Enable Notifications</h4><p>Allow browser push notifications</p></div>
+        <button class="settings-btn primary" onclick="requestNotifPermission()">Enable</button>
+      </div>
+    </div>
+
+    <!-- About -->
+
+    <div class="settings-section">
+
+      <div class="settings-section-title">ℹ️ About StudyBot</div>
+
+      <div class="settings-row">
+
+        <div class="settings-row-icon">👨‍💻</div>
+
+        <div class="settings-row-info"><h4>Developer</h4><p>Muhammad Abdul Moeez</p></div>
+
+        <span class="settings-row-val">9th Class 🇵🇰</span>
+
+      </div>
+
+      <div class="settings-row">
+
+        <div class="settings-row-icon">🤖</div>
+
+        <div class="settings-row-info"><h4>AI Engine</h4><p>OpenRouter — Llama, Gemini, DeepSeek</p></div>
+
+      </div>
+
+      <div class="settings-row">
+
+        <div class="settings-row-icon">📱</div>
+
+        <div class="settings-row-info"><h4>Version</h4><p>StudyBot AI v2.0</p></div>
+
+        <span class="settings-tag green">Latest</span>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Danger Zone -->
+
+    <div class="settings-section">
+
+      <div class="settings-section-title">⚠️ Account</div>
+
+      <div class="settings-row">
+
+        <div class="settings-row-icon">🚪</div>
+
+        <div class="settings-row-info"><h4>Sign Out</h4><p>You will be taken to the login screen</p></div>
+
+        <button class="settings-btn danger" onclick="doLogout()">Sign Out</button>
+
+      </div>
+
+    </div>
+
+
+
+  </div>
+
+</div>
+
+
+
+<!-- ══════════════ MAIN APP ══════════════ -->
+
+<div id="mainApp">
+
+
+
+  <!-- Header -->
+
+  <div class="app-header">
+
+    <button class="hamburger" onclick="toggleSidebar()" title="Toggle sidebar">
+
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">
+
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+
+      </svg>
+
+    </button>
+
+    <div class="header-brand">
+
+      <div class="header-logo">🎓</div>
+
+      <div>
+
+        <h1>StudyBot AI</h1>
+
+        <p>Pakistan's Smart Homework Helper</p>
+
+      </div>
+
+    </div>
+
+    <div class="header-right">
+
+      <div class="header-badge"><div class="dot"></div>AI Online</div>
+
+      <div class="header-user">
+
+        <div class="header-avatar" id="headerAvatar">?</div>
+
+        <span class="header-username" id="headerUsername">Student</span>
+
+      </div>
+
+      <button class="header-btn" onclick="openSettings()" title="Settings">⚙️</button>
+      <button class="header-btn" onclick="toggleDarkMode()" title="Dark Mode" id="darkModeBtn">🌙</button>
+      <button class="header-btn" onclick="toggleSearch()" title="Search Chat">🔍</button>
+      <button class="header-btn" onclick="openNotes()" title="Saved Notes">📝</button>
+      <button class="header-btn" onclick="exportChat()" title="Export Chat">📤</button>
+      <button class="header-btn" onclick="openVoiceChat()" title="Voice Chat">🎙️</button>
+
+    </div>
+
+  </div>
+
+
+
+
+
+
+  <!-- Study Reminder Banner -->
+  <div id="studyBanner">
+    <span id="bannerText">📚 Time to study! Keep your streak going.</span>
+    <span class="streak-badge" id="streakBadge">🔥 1 day streak</span>
+    <button class="banner-close" onclick="closeBanner()">×</button>
+  </div>
+
+  <!-- Chat Search Bar -->
+  <div id="chatSearch">
+    <input class="search-input" id="searchInput" placeholder="🔍 Search in chat..." oninput="searchChat(this.value)">
+    <button class="search-close-btn" onclick="toggleSearch()">×</button>
+  </div>
+
+  <!-- Body -->
+
+  <div class="app-body">
+
+    <!-- Sidebar overlay (mobile) -->
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+
+
+    <!-- Sidebar -->
+
+    <div class="sidebar" id="sidebar">
+
+      <div class="sidebar-header">
+
+        <h3>StudyBot</h3>
+
+        <button class="new-chat-btn" onclick="newChat()">✏️ New Chat</button>
+
+      </div>
+
+
+
+      <div class="sidebar-section">Recent Chats</div>
+
+      <div class="sidebar-items" id="chatHistory">
+
+        <div class="chat-item active" id="currentChatItem">
+
+          <span class="chat-item-icon">💬</span>
+
+          <span class="chat-item-text">New Conversation</span>
+
+        </div>
+
+      </div>
+
+      <div class="mode-section">
+        <div class="mode-section-title">🛠️ Tools</div>
+        <div class="mode-chips">
+          <button class="mode-chip" onclick="openQuiz()" style="background:rgba(37,99,235,.15);color:#2563eb;border-color:rgba(37,99,235,.3)">📊 Quiz / MCQ</button>
+          <button class="mode-chip" onclick="requestMindmap()" style="background:rgba(255,159,28,.15);color:#d97706;border-color:rgba(255,159,28,.3)">🧠 Mindmap</button>
+          <button class="mode-chip" onclick="openVoiceChat()" style="background:rgba(0,200,150,.15);color:#00a07a;border-color:rgba(0,200,150,.3)">🎙️ Voice Chat</button>
+          <button class="mode-chip" onclick="openNotes()" style="background:rgba(202,138,4,.15);color:#ca8a04;border-color:rgba(202,138,4,.3)">📝 My Notes</button>
+          <button class="mode-chip" onclick="exportChat()" style="background:rgba(124,58,237,.15);color:#7c3aed;border-color:rgba(124,58,237,.3)">📤 Export Chat</button>
+        </div>
+      </div>
+
+
+
+      <div class="mode-section">
+
+        <div class="mode-section-title">Subjects</div>
+
+        <div class="mode-chips">
+
+          <button class="mode-chip active" onclick="setModeFromSidebar(this,'chat','General')" data-mode="chat">💬 General Chat</button>
+
+          <button class="mode-chip" onclick="setModeFromSidebar(this,'math','Math')" data-mode="math">➕ Mathematics</button>
+
+          <button class="mode-chip" onclick="setModeFromSidebar(this,'science','Science')" data-mode="science">🔬 Science</button>
+
+          <button class="mode-chip" onclick="setModeFromSidebar(this,'english','English')" data-mode="english">📖 English</button>
+
+          <button class="mode-chip" onclick="setModeFromSidebar(this,'urdu','Urdu')" data-mode="urdu">اردو ✍️</button>
+
+          <button class="mode-chip" onclick="setModeFromSidebar(this,'pakstudies','Pak Studies')" data-mode="pakstudies">🇵🇰 Pak Studies</button>
+
+          <button class="mode-chip" onclick="setModeFromSidebar(this,'islamiat','Islamiat')" data-mode="islamiat">☪️ Islamiat</button>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="sidebar-footer">
+
+        <button class="sidebar-footer-btn" onclick="openSettings()">⚙️ Settings</button>
+
+        <button class="sidebar-footer-btn danger" onclick="doLogout()">🚪 Sign Out</button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- Chat -->
+
+    <div class="chat-area">
+
+      <div class="mode-bar" id="modeBar">
+        <button class="subject-btn" onclick="openSubjectPicker()" title="Choose subject">☰ Subjects</button>
+        <span class="subject-pill" id="subjectPill">💬 General Chat</span>
+      </div>
+
+
+
+      <div class="messages" id="messages">
+
+        <div class="welcome" id="welcome">
+
+          <div class="welcome-icon">👋</div>
+
+          <h2 id="welcomeTitle">Assalam o Alaikum!</h2>
+
+          <p>I'm StudyBot — your AI tutor. Ask anything in <strong>English or Urdu</strong>, get homework help!</p>
+
+          <div class="welcome-urdu">آپ کا ذہین Home Work مددگار</div>
+
+          <div class="tips-carousel">
+            <div class="tip-card"><span>📊</span>Type "quiz me on photosynthesis" for MCQs!</div>
+            <div class="tip-card"><span>🧠</span>Ask for a mindmap of any topic!</div>
+            <div class="tip-card"><span>🎙️</span>Use Voice Chat for hands-free studying!</div>
+            <div class="tip-card"><span>🖼️</span>Ask me to generate an image of any concept!</div>
+            <div class="tip-card"><span>📎</span>Upload PDF, Word or image files for analysis!</div>
+          </div>
+
+          <div class="sug-grid">
+
+            <button class="sug" onclick="useSug(this)" data-q="Write a complete Python program for a student grade calculator"><span>💻</span>Grade Calculator Code</button>
+
+            <button class="sug" onclick="useSug(this)" data-q="Explain Newton's 3 laws of motion in simple Urdu with examples"><span>🔬</span>Newton ki Laws Urdu mein</button>
+
+            <button class="sug" onclick="useSug(this)" data-q="Solve step by step: If a train travels 360km in 4 hours, find speed, and time for 540km"><span>➕</span>Train speed problem</button>
+
+            <button class="sug" onclick="useSug(this)" data-q="Write a short essay about the importance of education in Pakistan in English"><span>📖</span>Essay: Education in Pakistan</button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="input-area">
+  <!-- File preview strip -->
+  <div id="filePreviewStrip" style="display:none"></div>
+
+  <div class="top-row">
+    <button class="lang-btn active" id="langEn" onclick="setLang('en')">🇬🇧 English</button>
+    <button class="lang-btn" id="langUr" onclick="setLang('ur')">🇵🇰 اردو</button>
+    <div class="subj-lbl">Mode: <strong id="modeLabel">Chat</strong></div>
+  </div>
+
+  <div class="input-row">
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp" onchange="handleFileUpload(this)">
+    <button class="file-btn" onclick="document.getElementById('fileInput').click()" title="Attach file">📎</button>
+
+    <textarea id="userInput" class="input-box" placeholder="Ask anything — homework, questions, problems..." rows="1"
+      onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+
+    <button class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" title="Voice Input">
+      <svg id="micIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        <line x1="12" y1="19" x2="12" y2="23"></line>
+        <line x1="8" y1="23" x2="16" y2="23"></line>
+      </svg>
+    </button>
+
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+  </div>
+</div>
+
+        <div class="footer-note">Made by <span>Muhammad Abdul Moeez</span> · <span>9th Class</span> Student · For Pakistani Students 🇵🇰</div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ══════════════ SUBJECT PICKER ══════════════ -->
+<div id="subjectPicker" onclick="onSubjectPickerBackdrop(event)">
+  <div class="picker-card">
+    <div class="picker-head">
+      <h3>Choose a subject</h3>
+      <button class="picker-close" onclick="closeSubjectPicker()" title="Close">×</button>
+    </div>
+    <div class="picker-grid" id="subjectPickerGrid"></div>
+  </div>
+</div>
+
+<script>
+
+// ─── STATE ───────────────────────────────────────────
+let recognition;
+let isRecording = false;
+
+function toggleVoiceInput() {
+  const micBtn = document.getElementById('micBtn');
+  const userInput = document.getElementById('userInput');
+  
+  // Cross-browser support check
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+  if (!SpeechRecognition) {
+    alert("Voice input is not supported in this browser. Please use Chrome or Edge.");
+    return;
+  }
+
+  if (!recognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false; // Stop after one sentence
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      isRecording = true;
+      micBtn.classList.add('recording');
+      userInput.placeholder = "Listening...";
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      userInput.value = transcript;
+      
+      // Reset UI
+      userInput.placeholder = "Ask anything — homework, questions, problems...";
+      
+      // Trigger any existing auto-resize or logic
+      if (typeof autoResize === "function") autoResize(userInput);
+    };
+
+    recognition.onerror = (e) => {
+      console.error("Speech Recognition Error: ", e.error);
+      stopRecording();
+    };
+
+    recognition.onend = () => {
+      stopRecording();
+    };
+  }
+
+  if (isRecording) {
+    recognition.stop();
+  } else {
+    // Set language based on active StudyBot mode
+    // Checks if the 'langUr' button has the 'active' class
+    const isUrdu = document.getElementById('langUr').classList.contains('active');
+    recognition.lang = isUrdu ? 'ur-PK' : 'en-US';
+    
+    recognition.start();
+  }
+}
+// Disable Right-click
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// Disable F12 and common Inspect shortcuts
+document.onkeydown = function(e) {
+    if (e.keyCode == 123) return false; // F12
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; // Ctrl+Shift+C
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
+    if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U (View Source)
+};
+function stopRecording() {
+  isRecording = false;
+  const micBtn = document.getElementById('micBtn');
+  const userInput = document.getElementById('userInput');
+  micBtn.classList.remove('recording');
+  userInput.placeholder = "Ask anything — homework, questions, problems...";
+}
+
+let apiKey = localStorage.getItem('openrouterKey');
+
+let currentLang = 'en';
+
+let currentMode = 'chat';
+
+let currentSubject = 'General';
+
+let isLoading = false;
+
+let history = [];
+
+let currentUser = null;
+
+let currentUsername = '';
+
+// Enhanced chat state management
+let chatSessions = JSON.parse(localStorage.getItem('chatSessions') || '[]');
+let currentChatId = null;
+let chatCounter = 0;
+
+// Subject picker
+const SUBJECTS = [
+  { mode: 'chat', label: 'General Chat', icon: '💬', desc: 'Everyday questions, help, and guidance.' },
+  { mode: 'math', label: 'Mathematics', icon: '➕', desc: 'Algebra, geometry, word problems.' },
+  { mode: 'science', label: 'Science', icon: '🔬', desc: 'Physics, chemistry, biology.' },
+  { mode: 'english', label: 'English', icon: '📖', desc: 'Essays, grammar, comprehension.' },
+  { mode: 'urdu', label: 'Urdu', icon: 'اردو ✍️', desc: 'اردو میں مدد، مضامین، وضاحت.' },
+  { mode: 'pakstudies', label: 'Pak Studies', icon: '🇵🇰', desc: 'History, civics, Pakistan studies.' },
+  { mode: 'islamiat', label: 'Islamiat', icon: '☪️', desc: 'Islamiat / Islamic studies.' },
+];
+
+function openSubjectPicker() {
+  const overlay = document.getElementById('subjectPicker');
+  const grid = document.getElementById('subjectPickerGrid');
+  if (!overlay || !grid) return;
+
+  grid.innerHTML = SUBJECTS.map(s => `
+    <button class="picker-item" onclick="selectSubject('${s.mode}')" type="button">
+      <div class="picker-ico">${s.icon}</div>
+      <div class="picker-txt"><strong>${s.label}</strong><span>${s.desc}</span></div>
+    </button>
+  `).join('');
+
+  overlay.classList.add('open');
+}
+
+function closeSubjectPicker() {
+  const overlay = document.getElementById('subjectPicker');
+  overlay?.classList.remove('open');
+}
+
+function onSubjectPickerBackdrop(e) {
+  if (e.target?.id === 'subjectPicker') closeSubjectPicker();
+}
+
+function selectSubject(mode) {
+  const subject = SUBJECTS.find(s => s.mode === mode) || SUBJECTS[0];
+  setSubject(mode, subject.label, subject.icon);
+  closeSubjectPicker();
+}
+
+function setSubject(mode, label, icon) {
+  currentMode = mode;
+  currentSubject = label;
+  document.getElementById('modeLabel').textContent = label;
+  const pill = document.getElementById('subjectPill');
+  if (pill) pill.textContent = `${icon || '💬'} ${label}`;
+
+  const input = document.getElementById('userInput');
+  if (mode === 'urdu' || currentLang === 'ur') {
+    input.classList.add('urdu-mode');
+    input.placeholder = 'اپنا سوال یہاں لکھیں...';
+  } else {
+    input.classList.remove('urdu-mode');
+    input.placeholder = 'Ask anything — homework, questions, problems...';
+  }
+
+  // If the sidebar subjects are visible for any reason, keep them in sync
+  document.querySelectorAll('.mode-chip').forEach(c => c.classList.toggle('active', c.dataset.mode === mode));
+}
+
+// Enhanced UI state
+let typingIndicator = null;
+let lastActivity = Date.now();
+
+let sidebarOpen = window.innerWidth > 700;
+
+// Typing / waiting messages
+let typingMsgTimer = null;
+let typingMsgIndex = 0;
+const TYPING_MESSAGES = [
+  "Consulting the digital library...",
+  "Analyzing the question...",
+  "Searching for the best answer...",
+  "Checking the knowledge base...",
+  "Generating the answer...",
+  "Gathering brainpower to give you the best answer...",
+  "Scanning the universe for the right response. One second!",
+  "Mixing data and logic to create something great...",
+  "AI is currently thinking harder than a student during finals..."
+];
+
+
+
+const MODELS = {
+
+  chat: [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-chat-v3.1:free",
+    "meta-llama/llama-4-scout:free",
+    "mistralai/mistral-7b-instruct:free","nex-agi/nex-n2-pro:free","meta-llama/llama-3.2-11b-vision-instruct",
+    "qwen/qwen-2.5-72b-instruct" // Paid fallback if needed, requires OpenRouter credits
+  ],
+
+  math: [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-chat-v3.1:free",
+    "meta-llama/llama-4-scout:free",
+    "mistralai/mistral-7b-instruct:free","nex-agi/nex-n2-pro:free","meta-llama/llama-3.2-11b-vision-instruct",
+    "qwen/qwen-2.5-72b-instruct" // Paid fallback if needed, requires OpenRouter credits
+  ],
+
+  science: [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-chat-v3.1:free",
+    "meta-llama/llama-4-scout:free",
+    "mistralai/mistral-7b-instruct:free","nex-agi/nex-n2-pro:free","meta-llama/llama-3.2-11b-vision-instruct",
+    "qwen/qwen-2.5-72b-instruct" // Paid fallback if needed, requires OpenRouter credits
+  ],
+
+  english: [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-chat-v3.1:free",
+    "meta-llama/llama-4-scout:free",
+    "mistralai/mistral-7b-instruct:free","nex-agi/nex-n2-pro:free","meta-llama/llama-3.2-11b-vision-instruct",
+    "qwen/qwen-2.5-72b-instruct" // Paid fallback if needed, requires OpenRouter credits
+  ],
+
+  urdu:[
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-chat-v3.1:free",
+    "meta-llama/llama-4-scout:free",
+    "mistralai/mistral-7b-instruct:free","nex-agi/nex-n2-pro:free","meta-llama/llama-3.2-11b-vision-instruct",
+    "qwen/qwen-2.5-72b-instruct" // Paid fallback if needed, requires OpenRouter credits
+  ],
+
+  pakstudies: [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-chat-v3.1:free",
+    "meta-llama/llama-4-scout:free",
+    "mistralai/mistral-7b-instruct:free","nex-agi/nex-n2-pro:free","meta-llama/llama-3.2-11b-vision-instruct",
+    "qwen/qwen-2.5-72b-instruct" // Paid fallback if needed, requires OpenRouter credits
+  ],
+
+  islamiat: [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "deepseek/deepseek-chat-v3.1:free",
+    "meta-llama/llama-4-scout:free",
+    "mistralai/mistral-7b-instruct:free",
+    "nex-agi/nex-n2-pro:free","meta-llama/llama-3.2-11b-vision-instruct",
+    "qwen/qwen-2.5-72b-instruct" // Paid fallback if needed, requires OpenRouter credits
+  ],
+
+};
+
+
+
+// ─── AUTH UI ─────────────────────────────────────────
+
+function switchTab(tab) {
+
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+
+  document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+
+  document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+
+  clearAuthError();
+
+}
+
+
+
+function showAuthError(msg) {
+
+  const el = document.getElementById('authError');
+
+  el.style.display = 'block';
+
+  // Format Firebase error messages nicely
+
+  if (msg.includes('email-already-in-use')) msg = '⚠️ This email is already registered. Please login instead.';
+
+  else if (msg.includes('invalid-credential') || msg.includes('wrong-password')) msg = '⚠️ Incorrect email or password. Please try again.';
+
+  else if (msg.includes('weak-password')) msg = '⚠️ Password must be at least 6 characters.';
+
+  else if (msg.includes('invalid-email')) msg = '⚠️ Please enter a valid email address.';
+
+  else if (msg.includes('user-not-found')) msg = '⚠️ No account found with this email.';
+
+  else if (msg.includes('not configured')) msg = '⚠️ Supabase not configured yet. Update supabaseUrl and supabaseAnonKey in the code.';
+
+  el.textContent = msg;
+
+}
+
+
+
+function clearAuthError() {
+
+  document.getElementById('authError').style.display = 'none';
+
+}
+
+
+
+async function doRegister() {
+
+  const username = document.getElementById('regUsername').value.trim();
+
+  const email = document.getElementById('regEmail').value.trim();
+
+  const password = document.getElementById('regPassword').value;
+
+  const remember = document.getElementById('regRemember').checked;
+
+  
+
+  if (!username) { showAuthError('⚠️ Please enter your name or username.'); return; }
+
+  if (!email) { showAuthError('⚠️ Please enter your email address.'); return; }
+
+  if (password.length < 6) { showAuthError('⚠️ Password must be at least 6 characters.'); return; }
+
+
+
+  const btn = document.getElementById('registerBtn');
+
+  btn.disabled = true; btn.textContent = 'Creating account...';
+
+  clearAuthError();
+
+
+
+  const result = await window._fbRegister(email, password, username, remember);
+
+  btn.disabled = false; btn.textContent = 'Create Account →';
+
+
+
+  if (result.error) { showAuthError(result.error); return; }
+
+  enterApp(result.user, result.username);
+
+}
+
+
+
+async function doLogin() {
+
+  const email = document.getElementById('loginEmail').value.trim();
+
+  const password = document.getElementById('loginPassword').value;
+
+  const remember = document.getElementById('loginRemember').checked;
+
+
+
+  if (!email) { showAuthError('⚠️ Please enter your email address.'); return; }
+
+  if (!password) { showAuthError('⚠️ Please enter your password.'); return; }
+
+
+
+  const btn = document.getElementById('loginBtn');
+
+  btn.disabled = true; btn.textContent = 'Logging in...';
+
+  clearAuthError();
+
+
+
+  const result = await window._fbLogin(email, password, remember);
+
+  btn.disabled = false; btn.textContent = 'Login to StudyBot →';
+
+
+
+  if (result.error) { showAuthError(result.error); return; }
+
+  enterApp(result.user, result.username);
+
+}
+
+
+
+function enterApp(user, username) {
+
+  currentUser = user;
+
+  currentUsername = username || 'Student';
+
+  
+
+  // Update header
+
+  document.getElementById('headerUsername').textContent = currentUsername;
+
+  document.getElementById('headerAvatar').textContent = currentUsername[0].toUpperCase();
+
+
+
+  // Update welcome
+
+  document.getElementById('welcomeTitle').textContent = `Assalam o Alaikum, ${currentUsername.split(' ')[0]}! 👋`;
+
+
+
+  // Update settings panel
+
+  document.getElementById('settingNameDisplay').textContent = currentUsername;
+
+  document.getElementById('settingEmailDisplay').textContent = user?.email || '';
+
+
+
+  // Show/hide screens
+
+  document.getElementById('authScreen').style.display = 'none';
+
+  document.getElementById('mainApp').classList.add('visible');
+
+
+
+  // Sidebar state
+
+  if (window.innerWidth <= 700) {
+
+    document.getElementById('sidebar').classList.add('collapsed');
+
+    sidebarOpen = false;
+
+  }
+
+
+
+  showToast(`Welcome back, ${currentUsername.split(' ')[0]}! 🌟`);
+
+}
+
+
+
+async function doLogout() {
+
+  await window._fbLogout();
+
+  currentUser = null;
+
+  currentUsername = '';
+
+  history = [];
+
+  document.getElementById('mainApp').classList.remove('visible');
+
+  document.getElementById('authScreen').style.display = 'flex';
+
+  if (document.getElementById('settingsScreen').classList.contains('open')) closeSettings();
+
+  // Clear forms
+
+  document.getElementById('loginEmail').value = '';
+
+  document.getElementById('loginPassword').value = '';
+
+  // Reset messages
+
+  const msgs = document.getElementById('messages');
+
+  msgs.innerHTML = `<div class="welcome" id="welcome">
+
+    <div class="welcome-icon">👋</div>
+
+    <h2 id="welcomeTitle">Assalam o Alaikum!</h2>
+
+    <p>I'm StudyBot — your AI tutor. Ask anything in <strong>English or Urdu</strong>, get homework help!</p>
+
+    <div class="welcome-urdu">آپ کا ذہین Home Work مددگار</div>
+
+    <div class="sug-grid">
+
+      <button class="sug" onclick="useSug(this)" data-q="Write a complete Python program for a student grade calculator with comments"><span>💻</span>Grade Calculator Code</button>
+
+      <button class="sug" onclick="useSug(this)" data-q="Explain Newton's 3 laws of motion in simple Urdu with examples"><span>🔬</span>Newton ki Laws Urdu mein</button>
+
+      <button class="sug" onclick="useSug(this)" data-q="Solve step by step: If a train travels 360km in 4 hours, find speed, and time for 540km"><span>➕</span>Train speed problem</button>
+
+      <button class="sug" onclick="useSug(this)" data-q="Write a short essay about the importance of education in Pakistan in English"><span>📖</span>Essay: Education in Pakistan</button>
+
+    </div>
+
+  </div>`;
+
+}
+
+
+
+// ─── SETTINGS ─────────────────────────────────────────
+
+function openSettings() {
+
+  const s = document.getElementById('settingsScreen');
+
+  s.classList.add('open');
+
+  document.getElementById('settingNameDisplay').textContent = currentUsername;
+
+  document.getElementById('settingEmailDisplay').textContent = currentUser?.email || '—';
+
+  // Firebase status
+
+  const fbEl = document.getElementById('fbStatus');
+
+  if (window._firebaseReady) {
+
+    fbEl.textContent = '🟢 Connected';
+
+    fbEl.className = 'settings-tag green';
+
+  } else {
+
+    fbEl.textContent = '🔴 Not Configured';
+
+    fbEl.className = 'settings-tag red';
+
+  }
+
+  // Load API key
+
+  const savedKey = localStorage.getItem('openrouterKey');
+
+  if (savedKey) document.getElementById('settingsApiKey').value = savedKey;
+
+}
+
+
+
+function saveApiKey() {
+
+  const val = document.getElementById('settingsApiKey').value.trim();
+
+  if (!val) { showToast('⚠️ API key not found!'); return; }
+
+  apiKey = val;
+
+  localStorage.setItem('openrouterKey', val);
+
+  showToast('✅ API Key saved! Ready to use AI!');
+
+}
+
+
+
+function closeSettings() {
+
+  document.getElementById('settingsScreen').classList.remove('open');
+
+}
+
+
+
+// ─── SIDEBAR ──────────────────────────────────────────
+
+function toggleSidebar() {
+
+  const sb = document.getElementById('sidebar');
+
+  const ov = document.getElementById('sidebarOverlay');
+
+  sidebarOpen = !sidebarOpen;
+
+  sb.classList.toggle('collapsed', !sidebarOpen);
+
+  if (window.innerWidth <= 700) ov.classList.toggle('visible', sidebarOpen);
+
+}
+
+function closeSidebar() {
+
+  document.getElementById('sidebar').classList.add('collapsed');
+
+  document.getElementById('sidebarOverlay').classList.remove('visible');
+
+  sidebarOpen = false;
+
+}
+
+
+
+function newChat() {
+
+  // Save current chat if it has messages
+  if (history.length > 0 && currentChatId) {
+    saveCurrentChat();
+  }
+
+  // Create new chat session
+  currentChatId = 'chat_' + Date.now();
+  history = [];
+  chatCounter++;
+
+  const msgs = document.getElementById('messages');
+
+  msgs.innerHTML = `<div class="welcome" id="welcome">
+
+    <div class="welcome-icon">👋</div>
+
+    <h2 id="welcomeTitle">Assalam o Alaikum, ${currentUsername.split(' ')[0]}! 👋</h2>
+
+    <p>I'm StudyBot — your AI tutor. Ask anything in <strong>English or Urdu</strong>, get homework help!</p>
+
+    <div class="welcome-urdu">آپ کا ذہین Home Work مددگار</div>
+
+    <div class="sug-grid">
+
+      <button class="sug" onclick="useSug(this)" data-q="Write a complete Python program for a student grade calculator with comments"><span>💻</span>Grade Calculator Code</button>
+
+      <button class="sug" onclick="useSug(this)" data-q="Explain Newton's 3 laws of motion in simple Urdu with examples"><span>🔬</span>Newton ki Laws Urdu mein</button>
+
+      <button class="sug" onclick="useSug(this)" data-q="Solve step by step: If a train travels 360km in 4 hours, find speed, and time for 540km"><span>➕</span>Train speed problem</button>
+
+      <button class="sug" onclick="useSug(this)" data-q="Write a short essay about the importance of education in Pakistan in English"><span>📖</span>Essay: Education in Pakistan</button>
+
+    </div>
+
+  </div>`;
+
+  // Update current chat item
+  const currentChatItem = document.getElementById('currentChatItem');
+  currentChatItem.innerHTML = `<span class="chat-item-icon">💬</span><span class="chat-item-text">New Chat ${chatCounter}</span>`;
+  currentChatItem.className = 'chat-item active';
+
+  if (window.innerWidth <= 700) closeSidebar();
+
+  showToast('✨ New chat started!');
+
+}
+
+
+
+// (Deprecated) chat list is rebuilt by loadChatHistory()
+function addToChatHistory(_title) {}
+
+function formatRelativeTime(iso) {
+  if (!iso) return '';
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return '';
+  const diff = Date.now() - t;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'now';
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d`;
+}
+
+function getSubjectIcon(mode) {
+  return (SUBJECTS.find(s => s.mode === mode)?.icon) || '💬';
+}
+
+function selectChatItem(el) {
+  document.querySelectorAll('#chatHistory .chat-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+function selectCurrentChat() {
+  const el = document.getElementById('currentChatItem');
+  selectChatItem(el);
+}
+
+// Enhanced chat management functions
+function saveCurrentChat() {
+  if (!currentChatId || history.length === 0) return;
+  
+  const chatSession = {
+    id: currentChatId,
+    title: history[0]?.content?.slice(0, 32) + (history[0]?.content?.length > 32 ? '…' : '') || 'Untitled Chat',
+    history: JSON.parse(JSON.stringify(history)),
+    timestamp: new Date().toISOString(),
+    messageCount: history.length,
+    mode: currentMode,
+    subject: currentSubject,
+    lang: currentLang,
+  };
+  
+  // Remove existing chat with same ID
+  chatSessions = chatSessions.filter(chat => chat.id !== currentChatId);
+  
+  // Add updated chat
+  chatSessions.unshift(chatSession);
+  
+  // Keep only last 20 chats
+  if (chatSessions.length > 20) {
+    chatSessions = chatSessions.slice(0, 20);
+  }
+  
+  // Save to localStorage
+  localStorage.setItem('chatSessions', JSON.stringify(chatSessions));
+}
+
+function loadChatHistory() {
+  const container = document.getElementById('chatHistory');
+  container.innerHTML = ''; // Clear existing
+  
+  // Add current chat item
+  const currentChatItem = document.createElement('div');
+  currentChatItem.id = 'currentChatItem';
+  currentChatItem.className = 'chat-item active';
+  currentChatItem.innerHTML = `<span class="chat-item-icon">💬</span><span class="chat-item-text">Current Chat</span>`;
+  currentChatItem.onclick = () => selectCurrentChat();
+  container.appendChild(currentChatItem);
+  
+  // Add saved chats
+  chatSessions.forEach(chat => {
+    const item = document.createElement('div');
+    item.className = 'chat-item';
+    const icon = getSubjectIcon(chat.mode);
+    const meta = `${formatRelativeTime(chat.timestamp)} · ${chat.subject || chat.mode || 'General Chat'}`;
+    item.innerHTML = `
+      <span class="chat-item-icon">${icon}</span>
+      <span class="chat-item-text">${chat.title}<span style="display:block;font-size:.66rem;opacity:.55;margin-top:2px">${meta}</span></span>
+      <button class="header-btn" style="width:28px;height:28px;border-radius:8px;margin-left:auto" title="Delete" onclick="event.stopPropagation();deleteChat('${chat.id}')">🗑️</button>
+    `;
+    item.onclick = () => loadChat(chat.id, item);
+    container.appendChild(item);
+  });
+}
+
+function loadChat(chatId, el) {
+  const chat = chatSessions.find(c => c.id === chatId);
+  if (!chat) return;
+  
+  // Save current chat if it has messages
+  if (history.length > 0 && currentChatId) {
+    saveCurrentChat();
+  }
+  
+  // Load selected chat
+  currentChatId = chatId;
+  history = JSON.parse(JSON.stringify(chat.history));
+
+  // Restore subject/lang used for that chat
+  if (chat.mode) {
+    setSubject(chat.mode, chat.subject || SUBJECTS.find(s => s.mode === chat.mode)?.label || chat.mode, getSubjectIcon(chat.mode));
+  }
+  if (chat.lang) setLang(chat.lang);
+  
+  // Clear and rebuild messages
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = '';
+  
+  // Rebuild message display
+  history.forEach(msg => {
+    if (msg.role === 'user') {
+      appendMsg('user', msg.content);
+    } else if (msg.role === 'assistant') {
+      appendMsg('ai', msg.content);
+    }
+  });
+  
+  // Update active state
+  selectChatItem(el);
+  
+  showToast(`📂 Loaded: ${chat.title}`);
+}
+
+function deleteChat(chatId) {
+  if (!confirm('Are you sure you want to delete this chat?')) return;
+  
+  chatSessions = chatSessions.filter(chat => chat.id !== chatId);
+  localStorage.setItem('chatSessions', JSON.stringify(chatSessions));
+  
+  if (currentChatId === chatId) {
+    newChat();
+  }
+  
+  loadChatHistory();
+  showToast('🗑️ Chat deleted');
+}
+
+
+
+// ─── MODE / LANG ──────────────────────────────────────
+
+function setMode(el, mode, label) {
+  // Backwards compatible wrapper: subject selection is now via setSubject()
+  const icon = getSubjectIcon(mode);
+  setSubject(mode, label === 'General' ? 'General Chat' : label, icon);
+}
+
+
+
+function setModeFromSidebar(el, mode, label) {
+  // Backwards compatible: sidebar subjects are hidden, but keep behavior if used
+  setMode(null, mode, label);
+  if (window.innerWidth <= 700) closeSidebar();
+}
+
+
+
+function setLang(lang) {
+
+  currentLang = lang;
+
+  const input = document.getElementById('userInput');
+
+  document.getElementById('langEn').classList.toggle('active', lang === 'en');
+
+  document.getElementById('langUr').classList.toggle('active', lang === 'ur');
+
+  if (lang === 'ur') {
+
+    input.classList.add('urdu-mode');
+
+    input.placeholder = 'اپنا سوال یہاں لکھیں...';
+
+  } else {
+
+    input.classList.remove('urdu-mode');
+
+    input.placeholder = 'Ask anything — homework, questions, problems...';
+
+  }
+
+  input.focus();
+
+}
+
+
+
+// ─── UI HELPERS ───────────────────────────────────────
+
+function autoResize(el) {
+
+  el.style.height = 'auto';
+
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+
+}
+
+function handleKey(e) {
+
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+
+}
+
+function getTime() {
+
+  return new Date().toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' });
+
+}
+
+function useSug(el) {
+
+  document.getElementById('userInput').value = el.dataset.q;
+
+  sendMessage();
+
+}
+
+function showToast(msg) {
+
+  const t = document.createElement('div');
+
+  t.className = 'toast';
+
+  t.textContent = msg;
+
+  document.body.appendChild(t);
+
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(),300); }, 2200);
+
+}
+
+
+
+// ─── MESSAGE RENDERING ────────────────────────────────
+
+function removeWelcome() {
+
+  const w = document.getElementById('welcome');
+
+  if (w) w.remove();
+
+}
+
+
+
+function renderMarkdown(text) {
+
+  // Handle LaTeX math expressions first - before other markdown processing
+
+  // Convert \\[...\\] to $$...$$ (block math)
+
+  text = text.replace(/\\\[([^\]]+)\\\]/g, (match, math) => {
+
+    try {
+
+      if (typeof katex !== 'undefined') {
+
+        return katex.renderToString(math.trim(), { 
+
+          displayMode: true, 
+
+          throwOnError: false,
+
+          output: 'html'
+
+        });
+
+      }
+
+    } catch (e) {
+
+      console.warn('KaTeX rendering error:', e);
+
+    }
+
+    return `$$${math}$$`; // Fallback to $$ format
+
+  });
+
+  
+
+  // Convert \\(...\\) to $...$ (inline math)
+
+  text = text.replace(/\\\(([^)]+)\\\)/g, (match, math) => {
+
+    try {
+
+      if (typeof katex !== 'undefined') {
+
+        return katex.renderToString(math.trim(), { 
+
+          displayMode: false, 
+
+          throwOnError: false,
+
+          output: 'html'
+
+        });
+
+      }
+
+    } catch (e) {
+
+      console.warn('KaTeX rendering error:', e);
+
+    }
+
+    return `$${math}$`; // Fallback to $ format
+
+  });
+
+  
+
+  // Block math: $$...$$
+
+  text = text.replace(/\$\$([^$]+)\$\$/g, (match, math) => {
+
+    try {
+
+      if (typeof katex !== 'undefined') {
+
+        return katex.renderToString(math.trim(), { 
+
+          displayMode: true, 
+
+          throwOnError: false,
+
+          output: 'html'
+
+        });
+
+      }
+
+    } catch (e) {
+
+      console.warn('KaTeX rendering error:', e);
+
+    }
+
+    return match; // Fallback to original if KaTeX fails
+
+  });
+
+  
+
+  // Inline math: $...$
+
+  text = text.replace(/\$([^$]+)\$/g, (match, math) => {
+
+    try {
+
+      if (typeof katex !== 'undefined') {
+
+        return katex.renderToString(math.trim(), { 
+
+          displayMode: false, 
+
+          throwOnError: false,
+
+          output: 'html'
+
+        });
+
+      }
+
+    } catch (e) {
+
+      console.warn('KaTeX rendering error:', e);
+
+    }
+
+    return match; // Fallback to original if KaTeX fails
+
+  });
+
+  
+
+  // Code blocks
+
+  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+
+    const escaped = code.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    return `<pre><code>${escaped}</code></pre><span class="copy-btn" onclick="copyCode(this)">📋 Copy Code</span>`;
+
+  });
+
+  
+
+  // Inline code
+
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  
+
+  // Bold and italic
+
+  text = text.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+
+  text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+  
+
+  // Headers
+
+  text = text.replace(/^### (.+)$/gm, '<strong style="font-size:1rem;display:block;margin-top:8px">$1</strong>');
+
+  text = text.replace(/^## (.+)$/gm, '<strong style="font-size:1.05rem;display:block;margin-top:10px">$1</strong>');
+
+  text = text.replace(/^# (.+)$/gm, '<strong style="font-size:1.1rem;display:block;margin-top:10px">$1</strong>');
+
+  
+
+  // Lists
+
+  text = text.replace(/^[\-\*] (.+)$/gm, '&bull; $1<br>');
+
+  text = text.replace(/^\d+\. (.+)$/gm, (m, p) => `<span style="display:block;margin-left:4px">${p}</span>`);
+
+  
+
+  // Tables - Auto-format comparison/difference requests
+  // Clean up any existing broken table HTML first
+  text = text.replace(/table" style="[^"]*">/g, '');
+  text = text.replace(/:::::::::::::/g, '');
+  text = text.replace(/border:collapse:separate;border:spacing:0;/g, 'border-collapse:separate;border-spacing:0;');
+  
+  // Process markdown-style tables - improved logic
+  const markdownTableLines = text.split('\n').filter(line => line.trim().startsWith('|'));
+  if (markdownTableLines.length >= 2) {
+    let tableHtml = '<table class="comparison-table" style="width:100%;border-collapse:separate;border-spacing:0;margin:16px 0;background:white;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">';
+    
+    // Add header row
+    const headerCells = markdownTableLines[0].split('|').slice(1, -1).map(cell => cell.trim());
+    if (headerCells.length >= 2) {
+      tableHtml += '<thead><tr style="background:#f8fafc;border-bottom:2px solid #e5e7eb;">';
+      headerCells.forEach(cell => {
+        tableHtml += `<th style="padding:14px 16px;text-align:left;font-weight:700;color:#1f2937;border-right:1px solid #e5e7eb;font-size:14px;line-height:1.5;">${cell}</th>`;
+      });
+      tableHtml += '</tr></thead><tbody>';
+    }
+    
+    // Process data rows
+    for (let i = 1; i < markdownTableLines.length; i++) {
+      const rowCells = markdownTableLines[i].split('|').slice(1, -1).map(cell => cell.trim());
+      if (rowCells.length >= 2) {
+        const bgColor = i % 2 === 0 ? '#ffffff' : '#f9fafb';
+        tableHtml += '<tr style="border-bottom:1px solid #f3f4f6;">';
+        rowCells.forEach((cell, cellIndex) => {
+          tableHtml += `<td style="padding:12px 16px;background:${bgColor};border-right:1px solid #f3f4f6;color:#374151;font-size:14px;line-height:1.5;vertical-align:top;">${cell}</td>`;
+        });
+        tableHtml += '</tr>';
+      }
+    }
+    
+    tableHtml += '</tbody></table>';
+    
+    // Replace the entire table section
+    const tableSection = markdownTableLines.join('\n');
+    text = text.replace(tableSection, tableHtml);
+  }
+
+  // Auto-format simple comparison text as table
+  if (text.includes('difference') || text.includes('compare') || text.includes('vs') || text.includes('versus') || text.includes('summary table') || text.includes('table summary')) {
+    const lines = text.split('\n').filter(line => line.trim());
+    const comparisonLines = lines.filter(line => line.includes(':') || line.includes('-'));
+    
+    if (comparisonLines.length >= 2) {
+      let tableHtml = '<table class="auto-comparison-table" style="width:100%;border-collapse:separate;border-spacing:0;margin:16px 0;background:white;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">';
+      tableHtml += '<thead><tr style="background:#f8fafc;border-bottom:2px solid #e5e7eb;"><th style="padding:14px 16px;text-align:left;font-weight:700;color:#1f2937;border-right:1px solid #e5e7eb;font-size:14px;line-height:1.5;">Feature</th><th style="padding:14px 16px;text-align:left;font-weight:700;color:#1f2937;border-right:1px solid #e5e7eb;font-size:14px;line-height:1.5;">Details</th></tr></thead><tbody>';
+      
+      comparisonLines.forEach(line => {
+        const parts = line.split(/[:\-]/).map(part => part.trim());
+        if (parts.length >= 2) {
+          const feature = parts[0];
+          const details = parts.slice(1).join(':').trim();
+          const bgColor = comparisonLines.indexOf(line) % 2 === 0 ? '#ffffff' : '#f9fafb';
+          tableHtml += `<tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:12px 16px;background:${bgColor};border-right:1px solid #f3f4f6;color:#374151;font-size:14px;line-height:1.5;vertical-align:top;font-weight:500;">${feature}</td><td style="padding:12px 16px;background:${bgColor};border-right:1px solid #f3f4f6;color:#374151;font-size:14px;line-height:1.5;vertical-align:top;">${details}</td></tr>`;
+        }
+      });
+      
+      tableHtml += '</tbody></table>';
+      text = text.replace(/.*difference.*|.*compare.*|.*vs.*|.*versus.*/gi, tableHtml);
+    }
+  }
+
+  // Line breaks
+  text = text.replace(/\n/g, '<br>');
+
+  return text;
+
+}
+
+function copyCode(btn) {
+
+  const pre = btn.previousElementSibling;
+
+  navigator.clipboard.writeText(pre ? pre.innerText : '').then(() => {
+
+    btn.textContent = '✅ Copied!';
+
+    setTimeout(() => btn.textContent = '📋 Copy Code', 2000);
+
+  });
+
+}
+
+
+
+function appendMsg(role, content, type = 'text') {
+
+  removeWelcome();
+
+  const msgs = document.getElementById('messages');
+
+  const row = document.createElement('div');
+
+  row.className = `row ${role}`;
+
+
+
+  const av = document.createElement('div');
+
+  av.className = `av ${role}`;
+
+  av.textContent = role === 'ai' ? '🤖' : (currentUsername[0]?.toUpperCase() || '👤');
+
+
+
+  const bwrap = document.createElement('div');
+
+  const bub = document.createElement('div');
+
+  const isUrdu = /[\u0600-\u06FF]/.test(content) && role === 'ai';
+
+  bub.className = `bubble ${role}${isUrdu ? ' urdu' : ''}${type === 'error' ? ' error' : ''}`;
+
+  // Check if it's a mindmap response
+  if (role === 'ai' && content.includes('%%MINDMAP%%')) {
+    const parts = content.split('%%MINDMAP%%');
+    bub.innerHTML = renderMarkdown(parts[0] || '🧠 Here is your mindmap:');
+    const mapHtml = parts[1] || '';
+    setTimeout(() => renderMindmapInBubble(bwrap, mapHtml), 50);
+  } else if (role === 'ai' && content.startsWith('%%IMAGE%%')) {
+    const prompt = content.replace('%%IMAGE%%', '').trim();
+    bub.innerHTML = `<div class="img-gen-loading">🎨 Generating image: <em>${prompt}</em>...</div>`;
+    setTimeout(() => generateAndShowImage(bub, prompt), 100);
+  } else {
+    bub.innerHTML = renderMarkdown(content);
+  }
+
+
+
+  const timeDiv = document.createElement('div');
+
+  timeDiv.className = 'bubble-time';
+
+  timeDiv.textContent = getTime();
+
+  bub.appendChild(timeDiv);
+
+  // Add action buttons for AI messages
+  if (role === 'ai' && type !== 'error') {
+    const actions = document.createElement('div');
+    actions.className = 'bubble-actions';
+    const msgId = 'msg_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    bub.dataset.msgId = msgId;
+    actions.innerHTML = `
+      <button class="bact-btn" onclick="likeMsg(this)" title="Like">👍 Like</button>
+      <button class="bact-btn" onclick="dislikeMsg(this)" title="Dislike / Report">👎 Dislike</button>
+      <button class="bact-btn" onclick="saveNote(this)" title="Save as Note">💾 Save Note</button>
+    `;
+    bwrap.appendChild(bub);
+    bwrap.appendChild(actions);
+  } else {
+    bwrap.appendChild(bub);
+  }
+
+  row.appendChild(av);
+
+  row.appendChild(bwrap);
+
+  msgs.appendChild(row);
+
+  msgs.scrollTop = msgs.scrollHeight;
+
+}
+
+
+
+function showTyping() {
+
+  removeWelcome();
+
+  const msgs = document.getElementById('messages');
+
+  const row = document.createElement('div');
+
+  row.className = 'row ai'; row.id = 'typing';
+
+  const av = document.createElement('div');
+
+  av.className = 'av ai'; av.textContent = '🤖';
+
+  const tb = document.createElement('div');
+
+  tb.className = 'typing-bubble';
+
+  tb.innerHTML = `
+    <div class="typing-dots">●●●</div>
+    <div class="typing-text" id="typingMsg"></div>
+  `;
+
+  row.appendChild(av); row.appendChild(tb);
+
+  msgs.appendChild(row);
+
+  msgs.scrollTop = msgs.scrollHeight;
+
+  // Start rotating messages every 3s
+  const msgEl = document.getElementById('typingMsg');
+  typingMsgIndex = 0;
+  if (msgEl) msgEl.textContent = TYPING_MESSAGES[typingMsgIndex];
+  if (typingMsgTimer) clearInterval(typingMsgTimer);
+  typingMsgTimer = setInterval(() => {
+    const el = document.getElementById('typingMsg');
+    if (!el) return;
+    typingMsgIndex = (typingMsgIndex + 1) % TYPING_MESSAGES.length;
+    el.textContent = TYPING_MESSAGES[typingMsgIndex];
+  }, 3000);
+
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+  if (typingMsgTimer) {
+    clearInterval(typingMsgTimer);
+    typingMsgTimer = null;
+  }
+}
+
+function buildSystem() {
+
+  return `You are StudyBot, a smart AI tutor for Pakistani students (Class 1-12).
+
+
+
+CRITICAL MATH FORMATTING RULES (MUST FOLLOW):
+
+- ALWAYS use $...$ for ALL math expressions (both inline and block)
+
+- NEVER use \\(...\\) or \\[...\\] - these are FORBIDDEN
+
+- For block equations, still use $$...$$ (not \\[...\\])
+
+- Examples:
+
+  * Inline: $Area = length \times width$
+
+  * Block: $$Area = \pi r^2$$
+
+  * Fractions: $Area = \frac{1}{2} \times base \times height$
+
+
+
+IMPORTANT IDENTITY RULE:
+
+- If anyone asks "who made you", "who created you", "who is your developer",
+
+  you MUST reply:
+
+  "I was proudly developed by Muhammad Abdul Moeez, a talented 9th-grade student from Pakistan 🇵🇰. Driven by a deep-seated passion for technology and innovation, Moeez recognized the transformative potential of Artificial Intelligence in education. His mission is to bridge the gap between complex technology and student needs, crafting intuitive AI tools designed to empower learners, simplify academic challenges, and inspire the next generation of digital creators in his home country and beyond.🌟"
+
+
+
+STRICT RULE: NEVER say you were created by OpenAI or any company.
+
+
+
+IMAGE GENERATION RULE:
+- If the user asks you to "generate", "draw", "create", "show", "make an image" or "visualize" something, respond ONLY with this exact format (no other text):
+%%IMAGE%%<detailed visual description of the image>
+Example: If user says "generate an image of a cell", reply: %%IMAGE%%detailed scientific diagram of an animal cell showing nucleus, mitochondria, cell membrane, cytoplasm, labeled educational illustration
+
+
+
+MINDMAP / FLOWCHART / DIAGRAM RULE:
+- If the user asks for a mindmap, flowchart, diagram, or mind map, respond with a short text explanation first, then %%MINDMAP%% followed by a node list in this EXACT plain-text format — NOT HTML, NOT markdown, no styling, no tags:
+
+id|label|parentId
+
+- One node per line. Rules for the format:
+  - id: a short number or code, unique per line (1, 2, 3, 2a, 2b, etc).
+  - label: short plain text for that node (max ~6 words). No HTML tags, no quotes, no asterisks.
+  - parentId: the id of the node this connects to. The single root/center node uses parentId "0".
+- Example for "mindmap of the water cycle":
+%%MINDMAP%%
+1|Water Cycle|0
+2|Evaporation|1
+3|Sun heats water|2
+4|Condensation|1
+5|Clouds form|4
+6|Precipitation|1
+7|Rain and snow|6
+8|Collection|1
+9|Rivers and oceans|8
+- Keep it to 6-16 nodes total. Do not add any text, explanation, or formatting after the node list — it must be the last thing in your reply.
+- Do not write any HTML, CSS, divs, or style attributes yourself — the app renders the diagram from this list automatically.
+
+
+
+- Be helpful, clean, and safe.
+
+- Reply in the language the user uses (English or Urdu).
+
+- Mode: ${currentSubject}.
+
+- Use markdown formatting.
+
+- Use LaTeX for ALL mathematical expressions using $...$ format ONLY.
+
+- Never escape dollar signs unnecessarily.
+
+- TABLE FORMATTING: When user asks for differences, comparisons, "vs" questions, or summary tables, format as tables:
+  * Use pipe format: | Feature | Details |
+  * Headers will be automatically BOLD
+  * Or use bullet points with clear comparisons
+  * Examples: "difference between X and Y", "compare A and B", "X vs Y", "make a summary table", "table summary"
+
+- End with a 🌟.`;
+
+}
+
+
+
+// ─── SEND MESSAGE ─────────────────────────────────────
+
+async function sendMessage() {
+
+  if (isLoading) return;
+
+  const input = document.getElementById('userInput');
+
+  let text = input.value.trim();
+
+  if (!text && !pendingFile) return;
+
+  // Auto-detect mindmap/flowchart request
+  const mindmapTrigger = /mindmap|mind map|flowchart|flow chart|diagram|tree diagram/i.test(text);
+  // Auto-detect image gen request
+  const imageTrigger = /generate.*image|draw.*image|create.*image|show.*image|make.*image|imagine|visualize|generate a picture|draw a picture/i.test(text);
+
+
+
+  // Add to sidebar history if first message and ensure chat ID exists
+
+  if (history.length === 0) {
+    if (!currentChatId) {
+      currentChatId = 'chat_' + Date.now();
+      chatCounter++;
+    }
+    // Update current chat title and save session so it appears in Previous Chats
+    const currentChatItem = document.getElementById('currentChatItem');
+    if (currentChatItem) {
+      currentChatItem.innerHTML = `<span class="chat-item-icon">${getSubjectIcon(currentMode)}</span><span class="chat-item-text">${text.slice(0, 32) + (text.length > 32 ? '…' : '')}</span>`;
+    }
+  }
+
+
+
+  input.value = '';
+
+  input.style.height = 'auto';
+
+  isLoading = true;
+
+  document.getElementById('sendBtn').disabled = true;
+
+  // Build message content (with file if attached)
+  let userContent = text;
+  let apiContent = text;
+
+  if (pendingFile) {
+    userContent = `📎 [${pendingFile.name}]\n${text}`;
+    apiContent = await buildFileContent(text);
+    clearFilePreview();
+  }
+
+  appendMsg('user', userContent);
+  showTyping();
+
+  const activeModels = MODELS[currentMode] || MODELS.chat;
+
+  let success = false;
+
+  let lastError = '';
+
+
+
+  for (const modelId of activeModels) {
+
+    try {
+      // Use streaming fetch
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+
+        method: 'POST',
+
+        headers: {
+
+          'Content-Type': 'application/json',
+
+          'Authorization': `Bearer ${apiKey}`,
+
+          'HTTP-Referer': 'https://studybot.pk',
+
+          'X-Title': 'StudyBot PK'
+
+        },
+
+        body: JSON.stringify({
+
+          model: modelId,
+          stream: true,
+
+          messages: [
+
+            { role: 'system', content: buildSystem() },
+
+            ...history,
+
+            { role: 'user', content: apiContent }
+
+          ]
+
+        })
+
+      });
+
+      if (!res.ok || !res.body) {
+        let detail = `HTTP ${res.status}`;
+        try { const errBody = await res.json(); if (errBody?.error?.message) detail = errBody.error.message; } catch {}
+        lastError = detail;
+        continue;
+      }
+
+      // Streaming response
+      removeTyping();
+      const reply = await streamReply(res);
+
+      if (reply) {
+        history.push({ role: 'user', content: text });
+        history.push({ role: 'assistant', content: reply });
+        
+        // Auto-save current chat after successful response
+        if (currentChatId && history.length > 0) {
+          saveCurrentChat();
+        }
+        
+        if (history.length > 10) history = history.slice(-6);
+        success = true;
+        break;
+      }
+
+    } catch (err) {
+
+      lastError = err.message;
+      continue;
+
+    }
+
+  }
+
+
+
+  if (!success) {
+
+    removeTyping();
+
+    const friendly = /data policy|free model publication/i.test(lastError)
+      ? `Your OpenRouter account needs free-model permissions enabled. Go to openrouter.ai/settings/privacy and turn on "Enable free endpoints that may train on inputs" and "...may publish prompts", then try again.`
+      : /429|rate.?limit/i.test(lastError)
+      ? `You've hit the free model rate limit. Wait a minute and try again, or add credits to your OpenRouter account for higher limits.`
+      : /401|invalid.*key|unauthorized/i.test(lastError)
+      ? `Your API key looks invalid or expired. Please check it in Settings.`
+      : /402|insufficient/i.test(lastError)
+      ? `This model needs OpenRouter credits. Try again, or add credits in your OpenRouter account.`
+      : `Wait 10 seconds and retry, or check your API key in Settings.`;
+
+    appendMsg('ai', `⚠️ **Provider Error:** ${lastError}\n\n**Try:** ${friendly}`, 'error');
+
+  }
+
+
+
+  isLoading = false;
+
+  document.getElementById('sendBtn').disabled = false;
+
+  input.focus();
+
+}
+
+// ── Streaming helper ──────────────────────────────────
+async function streamReply(res) {
+  const msgs = document.getElementById('messages');
+  removeWelcome();
+
+  // Create streaming bubble
+  const row = document.createElement('div');
+  row.className = 'row ai';
+  const av = document.createElement('div');
+  av.className = 'av ai'; av.textContent = '🤖';
+  const bwrap = document.createElement('div');
+  const bub = document.createElement('div');
+  bub.className = 'bubble ai streaming-cursor';
+  bwrap.appendChild(bub);
+  row.appendChild(av); row.appendChild(bwrap);
+  msgs.appendChild(row);
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try {
+          const json = JSON.parse(data);
+          const delta = json.choices?.[0]?.delta?.content || '';
+          fullText += delta;
+          bub.innerHTML = renderMarkdown(fullText);
+          msgs.scrollTop = msgs.scrollHeight;
+        } catch {}
+      }
+    }
+  } catch (e) { console.warn('Stream error', e); }
+
+  // Finalize bubble
+  bub.classList.remove('streaming-cursor');
+
+  // Check for special content
+  if (fullText.includes('%%MINDMAP%%')) {
+    const parts = fullText.split('%%MINDMAP%%');
+    bub.innerHTML = renderMarkdown(parts[0] || '🧠 Here is your diagram:');
+    renderMindmapInBubble(bwrap, parts[1] || '');
+  } else if (fullText.startsWith('%%IMAGE%%')) {
+    const prompt = fullText.replace('%%IMAGE%%', '').trim();
+    bub.innerHTML = `<div class="img-gen-loading">🎨 Generating image...</div>`;
+    generateAndShowImage(bub, prompt);
+  }
+
+  // Add time + action buttons
+  const timeDiv = document.createElement('div');
+  timeDiv.className = 'bubble-time';
+  timeDiv.textContent = getTime();
+  bub.appendChild(timeDiv);
+
+  const actions = document.createElement('div');
+  actions.className = 'bubble-actions';
+  actions.innerHTML = `
+    <button class="bact-btn" onclick="likeMsg(this)">👍 Like</button>
+    <button class="bact-btn" onclick="dislikeMsg(this)">👎 Dislike</button>
+    <button class="bact-btn" onclick="saveNote(this)">💾 Save Note</button>
+  `;
+  bwrap.appendChild(actions);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  return fullText;
+}
+
+
+
+// ─── INIT ─────────────────────────────────────────────
+
+// Restore API key
+if (localStorage.getItem('openrouterKey')) apiKey = localStorage.getItem('openrouterKey');
+
+// Default subject is General Chat
+setSubject('chat', 'General Chat', '💬');
+loadChatHistory();
+
+
+
+// Handle Enter key in auth forms
+
+['loginEmail','loginPassword'].forEach(id => {
+
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+});
+
+['regUsername','regEmail','regPassword'].forEach(id => {
+
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+
+});
+// Supabase auth state listener (auto-login if session persists)
+window.addEventListener('firebaseReady', () => {
+  window._fbAuthState(result => {
+    if (result) enterApp(result.user, result.username);
+  });
+});
+
+// ══════════════════════════════════════════════════════
+// ═══════════  ALL NEW FEATURES JS  ═══════════════════
+// ══════════════════════════════════════════════════════
+
+// ─── DARK MODE ────────────────────────────────────────
+let darkMode = localStorage.getItem('darkMode') === '1';
+function applyDarkMode() {
+  document.body.classList.toggle('dark', darkMode);
+  const btn = document.getElementById('darkModeBtn');
+  const settBtn = document.getElementById('darkToggleBtn');
+  if (btn) btn.textContent = darkMode ? '☀️' : '🌙';
+  if (settBtn) settBtn.textContent = darkMode ? 'Disable' : 'Enable';
+  localStorage.setItem('darkMode', darkMode ? '1' : '0');
+}
+function toggleDarkMode() { darkMode = !darkMode; applyDarkMode(); }
+applyDarkMode();
+
+// ─── THEME COLOR ──────────────────────────────────────
+function setTheme(el) {
+  const color = el.dataset.color;
+  const dark = el.dataset.dark;
+  document.documentElement.style.setProperty('--green', color);
+  document.documentElement.style.setProperty('--green-dark', dark);
+  document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  localStorage.setItem('themeColor', color);
+  localStorage.setItem('themeColorDark', dark);
+}
+(function restoreTheme() {
+  const c = localStorage.getItem('themeColor');
+  const d = localStorage.getItem('themeColorDark');
+  if (c) {
+    document.documentElement.style.setProperty('--green', c);
+    document.documentElement.style.setProperty('--green-dark', d || c);
+    document.querySelectorAll('.theme-swatch').forEach(s => {
+      s.classList.toggle('active', s.dataset.color === c);
+    });
+  }
+})();
+
+// ─── CHAT SEARCH ──────────────────────────────────────
+function toggleSearch() {
+  const el = document.getElementById('chatSearch');
+  el.classList.toggle('open');
+  if (el.classList.contains('open')) document.getElementById('searchInput').focus();
+  else { document.getElementById('searchInput').value = ''; searchChat(''); }
+}
+function searchChat(q) {
+  const msgs = document.querySelectorAll('.bubble');
+  msgs.forEach(b => {
+    const txt = b.textContent || '';
+    if (!q) { b.classList.remove('msg-highlight'); return; }
+    b.classList.toggle('msg-highlight', txt.toLowerCase().includes(q.toLowerCase()));
+  });
+  if (q) {
+    const first = document.querySelector('.msg-highlight');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// ─── NOTES ────────────────────────────────────────────
+let notes = JSON.parse(localStorage.getItem('studybotNotes') || '[]');
+
+function openNotes() { renderNotes(); document.getElementById('notesPanel').classList.add('open'); }
+function closeNotes() { document.getElementById('notesPanel').classList.remove('open'); }
+
+function saveNote(btn) {
+  const bub = btn.closest('.bubble') || btn.closest('div').previousElementSibling;
+  // Get text from the nearest bubble
+  const row = btn.closest('.row') || btn.parentElement.closest('.row');
+  const bubble = row ? row.querySelector('.bubble') : null;
+  const text = bubble ? (bubble.innerText || bubble.textContent).replace(/\d{1,2}:\d{2} (AM|PM)/, '').trim() : '';
+  if (!text) return;
+  const note = { id: Date.now(), text: text.slice(0, 800), time: new Date().toLocaleString('en-PK') };
+  notes.unshift(note);
+  localStorage.setItem('studybotNotes', JSON.stringify(notes));
+  btn.textContent = '✅ Saved!';
+  btn.classList.add('saved');
+  setTimeout(() => { btn.textContent = '💾 Save Note'; btn.classList.remove('saved'); }, 2000);
+  renderNotes();
+}
+
+function deleteNote(id) {
+  notes = notes.filter(n => n.id !== id);
+  localStorage.setItem('studybotNotes', JSON.stringify(notes));
+  renderNotes();
+}
+
+function renderNotes() {
+  const list = document.getElementById('notesList');
+  if (!notes.length) { list.innerHTML = '<div class="notes-empty">No notes saved yet.<br>Click 💾 under any AI reply!</div>'; return; }
+  list.innerHTML = notes.map(n => `
+    <div class="note-item">
+      <button class="note-del" onclick="deleteNote(${n.id})">🗑️</button>
+      ${n.text.slice(0, 300)}${n.text.length > 300 ? '...' : ''}
+      <div class="note-item-time">📅 ${n.time}</div>
+    </div>
+  `).join('');
+}
+
+// ─── LIKE / DISLIKE ───────────────────────────────────
+function likeMsg(btn) {
+  btn.classList.toggle('liked');
+  btn.textContent = btn.classList.contains('liked') ? '👍 Liked!' : '👍 Like';
+}
+
+function dislikeMsg(btn) {
+  btn.classList.add('disliked');
+  btn.textContent = '👎 Reported';
+  openComplaint();
+}
+
+// ─── COMPLAINT MODAL ──────────────────────────────────
+function openComplaint() { document.getElementById('complaintModal').classList.add('open'); }
+function closeComplaint() { document.getElementById('complaintModal').classList.remove('open'); }
+
+async function submitComplaint() {
+  const name = document.getElementById('cName').value.trim();
+  const email = document.getElementById('cEmail').value.trim();
+  const msg = document.getElementById('cMsg').value.trim();
+  if (!name || !email || !msg) { alert('Please fill all fields.'); return; }
+
+  // ← REPLACE THIS URL WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+  const SHEETS_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, complaint: msg, time: new Date().toISOString(), app: 'StudyBot' })
+    });
+  } catch (e) { /* no-cors won't throw */ }
+
+  document.getElementById('cName').value = '';
+  document.getElementById('cEmail').value = '';
+  document.getElementById('cMsg').value = '';
+  closeComplaint();
+  alert('✅ Thank you! Your feedback has been submitted.');
+}
+
+// ─── EXPORT CHAT ──────────────────────────────────────
+function exportChat() {
+  const bubbles = document.querySelectorAll('.row');
+  if (!bubbles.length) { alert('No chat to export yet!'); return; }
+  let txt = `StudyBot Chat Export\n${new Date().toLocaleString()}\n${'═'.repeat(40)}\n\n`;
+  bubbles.forEach(row => {
+    const role = row.classList.contains('ai') ? '🤖 StudyBot' : `👤 ${currentUsername || 'Student'}`;
+    const bub = row.querySelector('.bubble');
+    if (bub) txt += `${role}:\n${(bub.innerText || '').replace(/\d{1,2}:\d{2} (AM|PM)/, '').trim()}\n\n`;
+  });
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `StudyBot_Chat_${Date.now()}.txt`;
+  a.click();
+}
+
+// ─── QUIZ MODE ────────────────────────────────────────
+let quizQuestions = [];
+let quizCurrent = 0;
+let quizScore = 0;
+let quizAnswered = false;
+
+function openQuiz() { document.getElementById('quizModal').classList.add('open'); showQuizSetup(); }
+function closeQuiz() { document.getElementById('quizModal').classList.remove('open'); }
+function showQuizSetup() {
+  document.getElementById('quizSetup').style.display = 'flex';
+  document.getElementById('quizQArea').style.display = 'none';
+  document.getElementById('quizResult').style.display = 'none';
+}
+
+async function startQuiz() {
+  const topic = document.getElementById('quizTopic').value.trim();
+  const count = document.getElementById('quizCount').value;
+  const diff = document.getElementById('quizDiff').value;
+  if (!topic) { alert('Please enter a topic!'); return; }
+  if (!apiKey) { alert('Please add your OpenRouter API key in Settings first.'); return; }
+
+  document.getElementById('quizSetup').style.display = 'none';
+  document.getElementById('quizQArea').style.display = 'block';
+  document.getElementById('quizQuestion').textContent = '⏳ Generating quiz...';
+  document.getElementById('quizOptions').innerHTML = '';
+
+  const prompt = `Generate exactly ${count} multiple choice questions about "${topic}" at ${diff} difficulty level for Pakistani students.
+
+STRICT FORMAT — use these exact separators:
+###Q### (question text)
+###A### Option A text
+###B### Option B text
+###C### Option C text
+###D### Option D text
+###ANS### (correct letter: A, B, C, or D)
+###END###
+
+Repeat this block for each question. No extra text, no numbering, no markdown.`;
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': 'https://studybot.pk', 'X-Title': 'StudyBot PK' },
+      body: JSON.stringify({ model: MODELS.chat[0], messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    const raw = data.choices?.[0]?.message?.content || '';
+    quizQuestions = parseQuiz(raw);
+    if (!quizQuestions.length) throw new Error('Could not parse quiz');
+    quizCurrent = 0; quizScore = 0;
+    showQuizQuestion();
+  } catch (e) {
+    document.getElementById('quizQuestion').textContent = '❌ Failed to generate quiz. Please try again.';
+  }
+}
+
+function parseQuiz(raw) {
+  const blocks = raw.split('###END###').map(b => b.trim()).filter(Boolean);
+  return blocks.map(block => {
+    const q = (block.match(/###Q###([\s\S]*?)###A###/) || [])[1]?.trim();
+    const a = (block.match(/###A###([\s\S]*?)###B###/) || [])[1]?.trim();
+    const b = (block.match(/###B###([\s\S]*?)###C###/) || [])[1]?.trim();
+    const c = (block.match(/###C###([\s\S]*?)###D###/) || [])[1]?.trim();
+    const d = (block.match(/###D###([\s\S]*?)###ANS###/) || [])[1]?.trim();
+    const ans = (block.match(/###ANS###\s*([ABCD])/) || [])[1]?.trim();
+    if (!q || !a || !b || !c || !d || !ans) return null;
+    return { q, options: { A: a, B: b, C: c, D: d }, ans };
+  }).filter(Boolean);
+}
+
+function showQuizQuestion() {
+  const total = quizQuestions.length;
+  const idx = quizCurrent;
+  if (idx >= total) { showQuizResult(); return; }
+  const qObj = quizQuestions[idx];
+  quizAnswered = false;
+  document.getElementById('quizProgress').textContent = `Q ${idx + 1} / ${total}`;
+  document.getElementById('quizProgressFill').style.width = `${((idx + 1) / total) * 100}%`;
+  document.getElementById('quizQuestion').textContent = qObj.q;
+  document.getElementById('quizNextBtn').style.display = 'none';
+  const opts = document.getElementById('quizOptions');
+  opts.innerHTML = ['A','B','C','D'].map(letter => `
+    <button class="quiz-opt" onclick="answerQuiz('${letter}', this)" data-letter="${letter}">${letter}. ${qObj.options[letter]}</button>
+  `).join('');
+}
+
+function answerQuiz(letter, btn) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const correct = quizQuestions[quizCurrent].ans;
+  document.querySelectorAll('.quiz-opt').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.letter === correct) b.classList.add('correct');
+  });
+  if (letter === correct) { quizScore++; btn.classList.add('correct'); }
+  else btn.classList.add('wrong');
+  document.getElementById('quizNextBtn').style.display = 'block';
+}
+
+function nextQuizQ() { quizCurrent++; showQuizQuestion(); }
+
+function showQuizResult() {
+  document.getElementById('quizQArea').style.display = 'none';
+  document.getElementById('quizResult').style.display = 'block';
+  const total = quizQuestions.length;
+  const pct = Math.round((quizScore / total) * 100);
+  document.getElementById('quizScoreCircle').textContent = `${quizScore}/${total}`;
+  document.getElementById('quizResultTitle').textContent = pct >= 80 ? '🎉 Excellent!' : pct >= 60 ? '👍 Good Job!' : '📚 Keep Studying!';
+  document.getElementById('quizResultMsg').textContent = `You scored ${quizScore} out of ${total} (${pct}%). ${pct >= 80 ? 'Outstanding performance!' : pct >= 60 ? 'You\'re doing well!' : 'Review the topic and try again!'}`;
+}
+
+function restartQuiz() { showQuizSetup(); }
+
+// ─── MINDMAP ──────────────────────────────────────────
+function requestMindmap() {
+  const topic = prompt('Enter topic for mindmap (e.g. Photosynthesis, Water Cycle, Newton Laws):');
+  if (!topic) return;
+  document.getElementById('userInput').value = `Create a detailed mindmap for: ${topic}`;
+  sendMessage();
+}
+
+// ─── MINDMAP: parse structured node list into a tree ──
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function parseMindmapNodes(raw) {
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l && l.includes('|'));
+  const nodes = {};
+  const order = [];
+  for (const line of lines) {
+    const parts = line.split('|');
+    if (parts.length < 3) continue;
+    const id = parts[0].trim();
+    const label = escapeHtml(parts[1].trim().replace(/<[^>]*>/g, '')).slice(0, 60); // strip tags, then escape, then cap length
+    const parentId = parts[2].trim();
+    if (!id || !label) continue;
+    nodes[id] = { id, label, parentId, children: [] };
+    order.push(id);
+  }
+  // link children to parents
+  let root = null;
+  for (const id of order) {
+    const node = nodes[id];
+    if (node.parentId === '0' || !nodes[node.parentId]) {
+      if (!root) root = node;
+    } else {
+      nodes[node.parentId].children.push(node);
+    }
+  }
+  return root;
+}
+
+// ─── MINDMAP: deterministic radial layout renderer ─────
+function renderMindmapHTML(root) {
+  if (!root) {
+    return '<div style="padding:24px;color:#888;font-family:sans-serif;text-align:center">Could not build a diagram from this response. Try asking again.</div>';
+  }
+
+  const palette = ['#00c896', '#2563eb', '#ff9f1c', '#00a07a', '#7c3aed', '#dc2626'];
+  const W = 900, H = 600, CX = W / 2, CY = H / 2;
+
+  let svgLines = '';
+  let nodesHtml = '';
+
+  // Center/root node
+  nodesHtml += `<div style="position:absolute;left:${CX}px;top:${CY}px;transform:translate(-50%,-50%);
+    background:#0f2e24;color:#fff;padding:14px 22px;border-radius:16px;font-weight:800;font-size:16px;
+    font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.18);white-space:nowrap;z-index:3;">
+    ${root.label}</div>`;
+
+  const branchCount = root.children.length || 1;
+  const branchRadius = 220;
+
+  root.children.forEach((branch, i) => {
+    const angle = (2 * Math.PI * i) / branchCount - Math.PI / 2;
+    const bx = CX + branchRadius * Math.cos(angle);
+    const by = CY + branchRadius * Math.sin(angle);
+    const color = palette[i % palette.length];
+
+    svgLines += `<line x1="${CX}" y1="${CY}" x2="${bx}" y2="${by}" stroke="${color}" stroke-width="2.5" opacity="0.55"/>`;
+
+    nodesHtml += `<div style="position:absolute;left:${bx}px;top:${by}px;transform:translate(-50%,-50%);
+      background:${color};color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;font-size:13.5px;
+      font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.14);white-space:nowrap;z-index:2;
+      max-width:180px;text-align:center;white-space:normal;">${branch.label}</div>`;
+
+    // Leaf nodes around each branch
+    const leafCount = branch.children.length || 0;
+    const leafRadius = 110;
+    branch.children.forEach((leaf, j) => {
+      const spread = leafCount > 1 ? (Math.PI / 3) : 0;
+      const leafAngle = angle + (j - (leafCount - 1) / 2) * (spread / Math.max(leafCount - 1, 1) || 0.001);
+      const lx = bx + leafRadius * Math.cos(leafAngle);
+      const ly = by + leafRadius * Math.sin(leafAngle);
+
+      svgLines += `<line x1="${bx}" y1="${by}" x2="${lx}" y2="${ly}" stroke="${color}" stroke-width="1.5" opacity="0.4"/>`;
+
+      nodesHtml += `<div style="position:absolute;left:${lx}px;top:${ly}px;transform:translate(-50%,-50%);
+        background:#fff;color:#0f2e24;padding:7px 12px;border-radius:10px;font-size:12px;font-weight:600;
+        font-family:'Plus Jakarta Sans',sans-serif;border:1.5px solid ${color};white-space:normal;
+        max-width:140px;text-align:center;z-index:1;">${leaf.label}</div>`;
+    });
+  });
+
+  return `<div style="position:relative;width:${W}px;height:${H}px;margin:0 auto;">
+    <svg width="${W}" height="${H}" style="position:absolute;top:0;left:0;z-index:0;">${svgLines}</svg>
+    ${nodesHtml}
+  </div>`;
+}
+
+function renderMindmapInBubble(bwrap, rawNodeList) {
+  const root = parseMindmapNodes(rawNodeList);
+  const html = renderMindmapHTML(root);
+
+  const container = document.createElement('div');
+  container.style.cssText = 'margin:10px 0;border-radius:14px;overflow:hidden;border:1.5px solid #e5e7eb;background:#fff;';
+  const toolbar = document.createElement('div');
+  toolbar.style.cssText = 'padding:8px 12px;background:#f8f8f8;display:flex;gap:8px;align-items:center;border-bottom:1px solid #e5e7eb;';
+  toolbar.innerHTML = `<span style="font-size:.75rem;color:#666;flex:1">🧠 Interactive Diagram</span>
+    <button onclick="openMindmapModal(this)" style="padding:4px 12px;border-radius:8px;border:none;background:#ff9f1c;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer">⛶ Fullscreen</button>
+    <button onclick="downloadMindmapFromBtn(this)" style="padding:4px 12px;border-radius:8px;border:none;background:#00c896;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer">⬇️ PNG</button>`;
+  const frame = document.createElement('iframe');
+  frame.style.cssText = 'width:100%;height:320px;border:none;';
+  frame.srcdoc = `<!DOCTYPE html><html><body style="margin:0;padding:16px;font-family:sans-serif;background:#fff;overflow:auto;">${html}</body></html>`;
+  frame.dataset.html = html;
+  container.appendChild(toolbar);
+  container.appendChild(frame);
+  bwrap.appendChild(container);
+}
+
+function openMindmapModal(btn) {
+  const frame = btn.closest('div').nextElementSibling;
+  const html = frame.dataset.html || '';
+  document.getElementById('mindmapFrame').srcdoc = `<!DOCTYPE html><html><body style="margin:0;padding:20px;font-family:sans-serif;background:#fff;">${html}</body></html>`;
+  document.getElementById('mindmapModal').classList.add('open');
+}
+
+function closeMindmap() { document.getElementById('mindmapModal').classList.remove('open'); }
+
+function downloadMindmapFromBtn(btn) {
+  const frame = btn.closest('div').nextElementSibling;
+  downloadFrameAsPng(frame);
+}
+
+function downloadMindmap() {
+  downloadFrameAsPng(document.getElementById('mindmapFrame'));
+}
+
+function downloadFrameAsPng(frame) {
+  try {
+    const canvas = document.createElement('canvas');
+    const doc = frame.contentDocument || frame.contentWindow?.document;
+    canvas.width = 900; canvas.height = 600;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const data = new XMLSerializer().serializeToString(doc.body);
+    const img = new Image();
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml">${data}</div></foreignObject></svg>`;
+    img.onload = () => { ctx.drawImage(img, 0, 0); const a = document.createElement('a'); a.href = canvas.toDataURL('image/png'); a.download = 'StudyBot_Mindmap.png'; a.click(); };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  } catch (e) { alert('Download failed. Try the fullscreen view and screenshot instead.'); }
+}
+
+// ─── IMAGE GENERATION (Pollinations AI) ───────────────
+async function generateAndShowImage(bub, prompt) {
+  const encodedPrompt = encodeURIComponent(`educational illustration for Pakistani students: ${prompt}`);
+  const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${Date.now()}&model=flux`;
+  bub.innerHTML = `<div class="img-gen-loading">🎨 Generating image for: <em>${prompt}</em>...</div>`;
+  const img = new Image();
+  img.onload = () => {
+    bub.innerHTML = `
+      <div class="ai-image-wrap">
+        <img src="${url}" alt="${prompt}" style="width:100%;border-radius:12px">
+        <div class="ai-image-caption">🎨 AI Generated: ${prompt}</div>
+      </div>`;
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'bubble-time';
+    timeDiv.textContent = getTime();
+    bub.appendChild(timeDiv);
+    document.getElementById('messages').scrollTop = 999999;
+  };
+  img.onerror = () => {
+    bub.innerHTML = `<p>❌ Image generation failed. Try again with a clearer description.</p>`;
+  };
+  img.src = url;
+}
+
+// ─── FILE UPLOAD & ANALYSIS ───────────────────────────
+let pendingFile = null;
+let pendingFileData = null;
+
+async function handleFileUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  pendingFile = file;
+  showFilePreview(file.name);
+
+  // Read file for sending to AI
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+    pendingFileData = { type: 'image', data: await toBase64(file), mimeType: file.type };
+  } else if (ext === 'pdf') {
+    pendingFileData = { type: 'pdf', data: await toBase64(file) };
+  } else if (['txt','csv'].includes(ext)) {
+    pendingFileData = { type: 'text', text: await file.text() };
+  } else if (['doc','docx'].includes(ext)) {
+    pendingFileData = { type: 'docx', data: await toBase64(file) };
+  } else {
+    pendingFileData = { type: 'binary', name: file.name, size: file.size };
+  }
+  input.value = '';
+}
+
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function showFilePreview(name) {
+  const strip = document.getElementById('filePreviewStrip');
+  strip.style.display = 'flex';
+  strip.innerHTML = `<div class="file-preview"><span style="font-size:20px">${getFileIcon(name)}</span><span class="file-preview-name">${name}</span><button class="file-preview-remove" onclick="clearFilePreview()">✕</button></div>`;
+}
+
+function clearFilePreview() {
+  pendingFile = null; pendingFileData = null;
+  const strip = document.getElementById('filePreviewStrip');
+  strip.style.display = 'none'; strip.innerHTML = '';
+}
+
+function getFileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const icons = { pdf: '📄', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊', ppt: '📊', pptx: '📊', jpg: '🖼️', jpeg: '🖼️', png: '🖼️', gif: '🖼️', txt: '📃', csv: '📋' };
+  return icons[ext] || '📎';
+}
+
+async function buildFileContent(text) {
+  if (!pendingFileData) return text;
+  const fd = pendingFileData;
+
+  if (fd.type === 'image') {
+    // Try vision model first
+    return [{ type: 'text', text: text || 'Analyze this image and explain it for a Pakistani student.' }, { type: 'image_url', image_url: { url: `data:${fd.mimeType};base64,${fd.data}` } }];
+  }
+  if (fd.type === 'text') {
+    return `The student uploaded a file. Here is its content:\n\n${fd.text.slice(0, 4000)}\n\nStudent's question: ${text || 'Please analyze and summarize this.'}`;
+  }
+  if (fd.type === 'pdf' || fd.type === 'docx') {
+    // Try OCR via Tesseract fallback message
+    return `The student uploaded a ${fd.type.toUpperCase()} file named "${pendingFile.name}". Please note you cannot directly read binary files, but tell the student to paste the text content here and you will help analyze it. Student's message: ${text || 'Please help with this file.'}`;
+  }
+  return `The student uploaded a file: ${pendingFile.name} (${Math.round(pendingFile.size/1024)}KB). Student says: ${text}`;
+}
+
+// ─── VOICE CHAT (Gemini-style) ────────────────────────
+let voiceListening = false;
+let voiceSpeaking = false;
+let voiceThinking = false;
+let voiceRecognition = null;
+let voiceSynth = window.speechSynthesis;
+let voiceVoices = [];
+let voiceSupported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+let voiceRestartTimer = null;
+
+function loadVoices() {
+  voiceVoices = voiceSynth.getVoices();
+  const sel = document.getElementById('voiceSelect');
+  const sett = document.getElementById('settingsVoice');
+  const savedVoice = localStorage.getItem('studybotVoice') || '';
+  [sel, sett].forEach(s => {
+    if (!s) return;
+    s.innerHTML = voiceVoices.map((v, i) => `<option value="${i}" ${v.name === savedVoice ? 'selected' : ''}>${v.name} (${v.lang})</option>`).join('') || '<option>No voices available</option>';
+  });
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function saveVoicePref() {
+  const sel = document.getElementById('settingsVoice');
+  if (sel && voiceVoices[sel.value]) localStorage.setItem('studybotVoice', voiceVoices[sel.value].name);
+}
+
+function openVoiceChat() {
+  document.getElementById('voiceChatModal').classList.add('open');
+  loadVoices();
+  const unsupportedEl = document.getElementById('voiceUnsupported');
+  const orb = document.getElementById('voiceOrb');
+  if (!voiceSupported) {
+    unsupportedEl.style.display = 'block';
+    orb.style.opacity = '0.4';
+    orb.style.cursor = 'not-allowed';
+    document.getElementById('voiceStatus').textContent = 'Voice input unavailable';
+  } else {
+    unsupportedEl.style.display = 'none';
+    orb.style.opacity = '1';
+    orb.style.cursor = 'pointer';
+  }
+  if (!apiKey) {
+    showToast('⚠️ Add your API key in Settings to use StudyBot');
+  }
+}
+
+function endVoiceChat() {
+  clearTimeout(voiceRestartTimer);
+  stopVoiceListening();
+  voiceSynth.cancel();
+  voiceSpeaking = false;
+  voiceThinking = false;
+  document.getElementById('voiceChatModal').classList.remove('open');
+  document.getElementById('voiceOrb').classList.remove('listening', 'speaking');
+  document.getElementById('voiceStatus').textContent = 'Tap to speak';
+  document.getElementById('voiceTranscript').textContent = 'Your words will appear here...';
+  document.getElementById('voiceAiReply').textContent = 'StudyBot will reply here...';
+}
+
+function toggleVoiceListening() {
+  if (!voiceSupported) { showToast('🎤 Voice input is not supported in this browser. Try Chrome or Edge.'); return; }
+  if (voiceThinking) return; // ignore taps while waiting on AI reply
+  clearTimeout(voiceRestartTimer);
+  if (voiceSpeaking) { voiceSynth.cancel(); voiceSpeaking = false; }
+  if (voiceListening) stopVoiceListening();
+  else startVoiceListening();
+}
+
+function startVoiceListening() {
+  if (!voiceSupported) { showToast('🎤 Voice input is not supported in this browser. Try Chrome or Edge.'); return; }
+  if (voiceListening) return; // guard against double-start
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  voiceRecognition = new SpeechRecognition();
+  voiceRecognition.lang = currentLang === 'ur' ? 'ur-PK' : 'en-US';
+  voiceRecognition.interimResults = true;
+  voiceRecognition.continuous = false;
+  voiceListening = true;
+  document.getElementById('voiceOrb').classList.add('listening');
+  document.getElementById('voiceOrb').textContent = '🔴';
+  document.getElementById('voiceStatus').textContent = 'Listening... speak now';
+  document.getElementById('voiceTranscript').textContent = '';
+
+  let finalized = false;
+
+  voiceRecognition.onresult = e => {
+    const transcript = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('voiceTranscript').textContent = transcript;
+    if (e.results[e.results.length - 1].isFinal) {
+      finalized = true;
+      stopVoiceListening();
+      if (transcript.trim()) sendVoiceMessage(transcript.trim());
+      else document.getElementById('voiceStatus').textContent = 'Tap to speak';
+    }
+  };
+
+  voiceRecognition.onerror = (e) => {
+    finalized = true;
+    stopVoiceListening();
+    if (e.error === 'no-speech') {
+      document.getElementById('voiceStatus').textContent = "Didn't catch that — tap to try again";
+    } else if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      showToast('🎤 Microphone access denied. Please allow mic permission.');
+    } else if (e.error !== 'aborted') {
+      showToast('🎤 Voice recognition error: ' + e.error);
+    }
+  };
+
+  // onend can fire after a clean result too — only reset state if we
+  // didn't already handle it via onresult/onerror, to avoid double-resets.
+  voiceRecognition.onend = () => {
+    if (!finalized) stopVoiceListening();
+  };
+
+  try {
+    voiceRecognition.start();
+  } catch (err) {
+    voiceListening = false;
+    document.getElementById('voiceOrb').classList.remove('listening');
+    document.getElementById('voiceOrb').textContent = '🎤';
+    document.getElementById('voiceStatus').textContent = 'Tap to speak';
+  }
+}
+
+function stopVoiceListening() {
+  voiceListening = false;
+  if (voiceRecognition) { try { voiceRecognition.stop(); } catch {} }
+  document.getElementById('voiceOrb').classList.remove('listening');
+  document.getElementById('voiceOrb').textContent = '🎤';
+}
+
+async function sendVoiceMessage(text) {
+  if (!apiKey) {
+    showToast('⚠️ Please add your API key in Settings first');
+    document.getElementById('voiceStatus').textContent = 'Tap to speak';
+    return;
+  }
+  voiceThinking = true;
+  document.getElementById('voiceStatus').textContent = '🤖 Thinking...';
+  document.getElementById('voiceAiReply').textContent = '...';
+
+  const models = (MODELS[currentMode] && MODELS[currentMode].length) ? MODELS[currentMode] : MODELS.chat;
+  let reply = null;
+  let lastError = null;
+
+  for (const model of models) {
+    try {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': 'https://studybot.pk', 'X-Title': 'StudyBot PK' },
+        body: JSON.stringify({ model, messages: [{ role: 'system', content: buildSystem() + '\n\nKEY: Reply in 2-3 short sentences only. Be concise for voice.' }, ...history, { role: 'user', content: text }] })
+      });
+      if (!res.ok) {
+        let detail = `HTTP ${res.status}`;
+        try { const errBody = await res.json(); if (errBody?.error?.message) detail = errBody.error.message; } catch {}
+        lastError = detail;
+        continue;
+      }
+      const data = await res.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (content && content.trim()) { reply = content.trim(); break; }
+      lastError = data.error?.message || 'Empty response from model';
+    } catch (e) {
+      lastError = e.message;
+    }
+  }
+
+  voiceThinking = false;
+
+  if (!reply) {
+    const friendly = lastError && /data policy|free model publication/i.test(lastError)
+      ? 'Your OpenRouter account needs free-model permissions enabled. Go to openrouter.ai/settings/privacy and turn on the free-endpoint options, then try again.'
+      : lastError && /429|rate.?limit/i.test(lastError)
+      ? "You've hit the free model's rate limit. Wait a minute and try again, or add OpenRouter credits for higher limits."
+      : lastError && /401|invalid.*key|unauthorized/i.test(lastError)
+      ? 'Your API key looks invalid or expired. Please check it in Settings.'
+      : lastError && /402|credit|insufficient/i.test(lastError)
+      ? 'This model needs OpenRouter credits. Try again, or add credits in your OpenRouter account.'
+      : `Could not get a response (${lastError || 'unknown error'}). Please try again.`;
+    document.getElementById('voiceAiReply').textContent = '⚠️ ' + friendly;
+    document.getElementById('voiceStatus').textContent = 'Tap to speak';
+    showToast('❌ ' + friendly);
+    return;
+  }
+
+  history.push({ role: 'user', content: text });
+  history.push({ role: 'assistant', content: reply });
+  if (history.length > 6) history = history.slice(-6);
+  document.getElementById('voiceAiReply').textContent = reply;
+  speakReply(reply);
+  // Also add to main chat
+  appendMsg('user', text);
+  appendMsg('ai', reply);
+}
+
+function speakReply(text) {
+  voiceSynth.cancel();
+  const plain = text.replace(/[#*`_\[\]()]/g, '').replace(/\$[^$]+\$/g, '').trim();
+  const utt = new SpeechSynthesisUtterance(plain);
+  const sel = document.getElementById('voiceSelect');
+  const savedName = localStorage.getItem('studybotVoice');
+  let voice = voiceVoices.find(v => v.name === savedName);
+  if (!voice && sel && voiceVoices[sel.value]) voice = voiceVoices[sel.value];
+  if (voice) utt.voice = voice;
+  utt.rate = 0.95; utt.pitch = 1.0;
+  utt.onstart = () => { voiceSpeaking = true; document.getElementById('voiceOrb').classList.add('speaking'); document.getElementById('voiceStatus').textContent = '🔊 Speaking...'; };
+  utt.onend = () => {
+    voiceSpeaking = false;
+    document.getElementById('voiceOrb').classList.remove('speaking');
+    document.getElementById('voiceStatus').textContent = 'Tap to speak';
+    // Auto-continue: if enabled and the modal is still open, start listening again
+    const autoContinue = document.getElementById('voiceAutoContinue');
+    const modalOpen = document.getElementById('voiceChatModal').classList.contains('open');
+    if (autoContinue && autoContinue.checked && modalOpen && voiceSupported && !voiceThinking) {
+      voiceRestartTimer = setTimeout(() => { if (!voiceListening && !voiceSpeaking) startVoiceListening(); }, 600);
+    }
+  };
+  voiceSynth.speak(utt);
+}
+
+// ─── STUDY REMINDER & STREAK ──────────────────────────
+function initStudyReminder() {
+  const today = new Date().toDateString();
+  const lastStudy = localStorage.getItem('lastStudyDate');
+  let streak = parseInt(localStorage.getItem('studyStreak') || '0');
+
+  if (lastStudy !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    streak = lastStudy === yesterday ? streak + 1 : 1;
+    localStorage.setItem('studyStreak', streak);
+    localStorage.setItem('lastStudyDate', today);
+  }
+
+  document.getElementById('streakBadge').textContent = `🔥 ${streak} day streak`;
+  checkAndShowReminder();
+}
+
+function checkAndShowReminder() {
+  const reminderTime = localStorage.getItem('reminderTime') || '17:00';
+  const now = new Date();
+  const [h, m] = reminderTime.split(':').map(Number);
+  const reminderMs = h * 60 * 60 * 1000 + m * 60 * 1000;
+  const nowMs = now.getHours() * 3600000 + now.getMinutes() * 60000;
+  // Show banner if within 30 min window of reminder time
+  if (Math.abs(nowMs - reminderMs) < 30 * 60000) {
+    showStudyBanner();
+  }
+  // Schedule check every 5 min
+  setTimeout(checkAndShowReminder, 5 * 60 * 1000);
+}
+
+function showStudyBanner() {
+  const banner = document.getElementById('studyBanner');
+  const streak = localStorage.getItem('studyStreak') || '1';
+  document.getElementById('bannerText').textContent = `📚 Study time! It's your daily reminder — let's keep learning!`;
+  document.getElementById('streakBadge').textContent = `🔥 ${streak} day streak`;
+  banner.classList.add('show');
+}
+
+function closeBanner() { document.getElementById('studyBanner').classList.remove('show'); }
+
+function saveReminderTime() {
+  const val = document.getElementById('reminderTime').value;
+  localStorage.setItem('reminderTime', val);
+}
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) { alert('Notifications not supported in this browser.'); return; }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    alert('✅ Notifications enabled! You will be reminded daily at your set time.');
+    scheduleNotification();
+  } else {
+    alert('❌ Notification permission denied. Please enable in browser settings.');
+  }
+}
+
+function scheduleNotification() {
+  const reminderTime = localStorage.getItem('reminderTime') || '17:00';
+  const [h, m] = reminderTime.split(':').map(Number);
+  const now = new Date();
+  let target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+  const delay = target - now;
+  setTimeout(() => {
+    new Notification('📚 StudyBot Reminder', { body: `Time to study! Keep your streak going! 🔥`, icon: 'https://img.icons8.com/emoji/48/graduation-cap.png' });
+    scheduleNotification(); // reschedule for next day
+  }, delay);
+}
+
+// Initialize reminder on load
+setTimeout(initStudyReminder, 2000);
+
+</script>
+</body>
+
+</html>
